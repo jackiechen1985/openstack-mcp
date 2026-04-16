@@ -1,5 +1,5 @@
 /**
- * Nova API 调用封装
+ * Glance API 调用封装
  */
 import { getCurrentSession } from './keystone.js';
 import { makeApiCall } from './common.js';

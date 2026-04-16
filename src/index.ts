@@ -137,7 +137,6 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('网络名称, 可选参数'),
     },
     async ({
@@ -145,7 +144,7 @@ server.tool(
     }) => {
         try {
             const params: { name?: string; } = {};
-            if (name !== '') {
+            if (name !== undefined) {
                 params.name = name;
             }
             let networks: any = await neutronApi.getNetworks(params);
@@ -209,24 +208,37 @@ server.tool(
             .describe('网络CIDR（要求格式例如IPv4: 192.168.0.0/24，IPv6: 2026:10::/64）, 必填参数'),
         ipVersion: z
             .number()
-            .optional()
-            .default(4)
             .describe('IP协议版本（要求数字4或者6）必填参数'),
         gatewayIp: z
             .string()
             .optional()
-            .default('')
             .describe('网关IP地址（要求格式例如IPv4: 192.168.0.1，IPv6: 2026:10::1且必须属于CIDR范围）, 可选参数'),
+        enableDhcp: z
+            .boolean()
+            .optional()
+            .describe('是否开启DHCP服务, 可选参数'),
+        dnsNameservers: z
+            .array(z.string())
+            .optional()
+            .describe('DNS服务器列表, 可选参数'),
+        hostRoutes: z
+            .array(z.string())
+            .optional()
+            .describe('主机路由列表, 可选参数'),
     },
     async ({
         name,
         networkId,
         cidr,
         ipVersion,
-        gatewayIp
+        gatewayIp,
+        enableDhcp,
+        dnsNameservers,
+        hostRoutes
     }) => {
         try {
-            let subnet: any = await neutronApi.createSubnet(name, networkId, cidr, ipVersion, gatewayIp);
+            let subnet: any = await neutronApi.createSubnet(name, networkId, cidr, ipVersion, gatewayIp, enableDhcp,
+                dnsNameservers, hostRoutes);
             return {
                 content: [{ type: 'text', text: `创建子网成功，返回创建的子网： ${JSON.stringify(subnet)}` }]
             }
@@ -279,16 +291,23 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('子网名称, 可选参数'),
+        networkId: z
+            .string()
+            .optional()
+            .describe('网络id, 可选参数'),
     },
     async ({
-        name
+        name,
+        networkId,
     }) => {
         try {
-            const params: { name?: string; } = {};
-            if (name !== '') {
+            const params: { name?: string; network_id?: string } = {};
+            if (name !== undefined) {
                 params.name = name;
+            }
+            if (networkId !== undefined) {
+                params.network_id = networkId;
             }
             let subnets: any = await neutronApi.getSubnets(params);
             return {
@@ -329,6 +348,171 @@ server.tool(
                     {
                         type: 'text',
                         text: `获取子网详情失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'create_port',
+    '创建端口, 会自动使用已登录的token。注意：如果用户未指定网络id，请提示用户先使用create_network创建网络',
+    {
+        name: z
+            .string()
+            .describe('端口名称，必填参数'),
+        networkId: z
+            .string()
+            .describe('网络id，必填参数'),
+        admin_state_up: z
+            .boolean()
+            .optional()
+            .describe('是否激活该端口, 可选参数'),
+        allowed_address_pairs: z
+            .array(z.string())
+            .optional()
+            .describe('允许通过该端口的IP地址列表，可选参数'),
+        fixed_ips: z
+            .array(z.string())
+            .optional()
+            .describe('端口的固定IP地址（要求格式例如IPv4: 192.168.0.1，IPv6: 2026:10::1）, 可选参数'),
+        mac_address: z
+            .string()
+            .optional()
+            .describe('端口的MAC地址, 可选参数'),
+        port_security_enabled: z
+            .boolean()
+            .optional()
+            .describe('是否激活该端口的安全属性, 可选参数'),
+        security_groups: z
+            .array(z.string())
+            .optional()
+            .describe('安全组列表, 可选参数'),
+    },
+    async ({
+        name,
+        networkId,
+        admin_state_up,
+        allowed_address_pairs,
+        fixed_ips,
+        mac_address,
+        port_security_enabled,
+        security_groups,
+    }) => {
+        try {
+            let port: any = await neutronApi.createPort(name, networkId, admin_state_up, allowed_address_pairs, fixed_ips,
+                mac_address, port_security_enabled, security_groups);
+            return {
+                content: [{ type: 'text', text: `创建端口成功，返回创建的端口： ${JSON.stringify(port)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `创建端口失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'delete_port',
+    '删除端口, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('端口id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            await neutronApi.deletePort(id);
+            return {
+                content: [{ type: 'text', text: `删除端口成功` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `删除端口失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_ports',
+    '获取端口列表, 会自动使用已登录的token',
+    {
+        name: z
+            .string()
+            .optional()
+            .describe('端口名称, 可选参数'),
+        networkId: z
+            .string()
+            .optional()
+            .describe('网络id, 可选参数'),
+    },
+    async ({
+        name,
+        networkId,
+    }) => {
+        try {
+            const params: { name?: string; network_id?: string } = {};
+            if (name !== undefined) {
+                params.name = name;
+            }
+            if (networkId !== undefined) {
+                params.network_id = networkId;
+            }
+
+            let ports: any = await neutronApi.getPorts(params);
+            return {
+                content: [{ type: 'text', text: `获取端口列表成功，返回端口列表： ${JSON.stringify(ports)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取端口列表失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_port',
+    '获取指定端口ID的详情, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('端口id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            let port: any = await neutronApi.getPort(id);
+            return {
+                content: [{ type: 'text', text: `获取端口详情成功，返回端口详情：${JSON.stringify(port)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取端口详情失败，错误原因：${error}`,
                     },
                 ],
             }
@@ -401,7 +585,6 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('路由器名称, 可选参数'),
     },
     async ({
@@ -409,7 +592,7 @@ server.tool(
     }) => {
         try {
             const params: { name?: string; } = {};
-            if (name !== '') {
+            if (name !== undefined) {
                 params.name = name;
             }
             let routers: any = await neutronApi.getRouters(params);
@@ -525,6 +708,294 @@ server.tool(
 );
 
 server.tool(
+    'create_security_group',
+    '创建安全组, 会自动使用已登录的token',
+    {
+        name: z
+            .string()
+            .describe('安全组名称，必填参数'),
+        stateful: z
+            .boolean()
+            .optional()
+            .describe('是否有状态，可选参数'),
+    },
+    async ({
+        name,
+        stateful,
+    }) => {
+        try {
+            let sg: any = await neutronApi.createSecurityGroup(name, stateful);
+            return {
+                content: [{ type: 'text', text: `创建安全组成功，返回创建的安全组： ${JSON.stringify(sg)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `创建安全组失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'delete_security_group',
+    '删除安全组, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('安全组id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            await neutronApi.deleteSecurityGroup(id);
+            return {
+                content: [{ type: 'text', text: `删除安全组成功` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `删除安全组失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_security_groups',
+    '获取安全组列表, 会自动使用已登录的token',
+    {
+        name: z
+            .string()
+            .optional()
+            .describe('安全组名称, 可选参数'),
+    },
+    async ({
+        name,
+    }) => {
+        try {
+            const params: { name?: string } = {};
+            if (name !== undefined) {
+                params.name = name;
+            }
+
+            let sgs: any = await neutronApi.getSecurityGroups(params);
+            return {
+                content: [{ type: 'text', text: `获取安全组列表成功，返回安全组列表： ${JSON.stringify(sgs)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取安全组列表失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_security_group',
+    '获取指定安全组ID的详情, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('安全组id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            let sg: any = await neutronApi.getSecurityGroup(id);
+            return {
+                content: [{ type: 'text', text: `获取安全组详情成功，返回安全组详情：${JSON.stringify(sg)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取安全组详情失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'create_security_group_rule',
+    '创建安全组规则, 会自动使用已登录的token',
+    {
+        securityGroupId: z
+            .string()
+            .describe('安全组id，必填参数'),
+        direction: z
+            .enum(['ingress', 'egress']) 
+            .describe('方向，必填参数 (ingress: 入方向, egress: 出方向)'),
+        ethertype: z
+            .enum(['IPv4', 'IPv6']) 
+            .optional()
+            .describe('以太网类型IPv4/IPv6，可选参数'),
+        protocol: z
+            .enum(['tcp', 'udp', 'icmp', 'icmpv6']) 
+            .optional()
+            .describe('传输层协议，可选参数'),
+        remoteIpPrefix: z
+            .string()
+            .optional()
+            .describe('远端IP地址，可选参数'),
+        remoteGroupId: z
+            .string()
+            .optional()
+            .describe('远端安全组id，可选参数'),
+        portRangeMin: z
+            .number()
+            .min(0)
+            .max(65535)
+            .optional()
+            .describe('端口最小值 (0-65535)，可选参数'),
+        portRangeMax: z
+            .number()
+            .min(0)
+            .max(65535)
+            .optional()
+            .describe('端口最大值 (0-65535)，可选参数'),
+    },
+    async ({
+        securityGroupId,
+        direction,
+        ethertype,
+        protocol,
+        remoteIpPrefix,
+        remoteGroupId,
+        portRangeMin,
+        portRangeMax,
+    }) => {
+        try {
+            let sgRule: any = await neutronApi.createSecurityGroupRule(securityGroupId, direction, ethertype, protocol,
+                remoteIpPrefix, remoteGroupId, portRangeMin, portRangeMax);
+            return {
+                content: [{ type: 'text', text: `创建安全组规则成功，返回创建的安全组规则： ${JSON.stringify(sgRule)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `创建安全组规则失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'delete_security_group_rule',
+    '删除安全组规则, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('安全组规则id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            await neutronApi.deleteSecurityGroupRule(id);
+            return {
+                content: [{ type: 'text', text: `删除安全组规则成功` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `删除安全组规则失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_security_group_rules',
+    '获取安全组规则列表, 会自动使用已登录的token',
+    {
+        securityGroupId: z
+            .string()
+            .optional()
+            .describe('安全组id, 可选参数'),
+    },
+    async ({
+        securityGroupId,
+    }) => {
+        try {
+            const params: { security_group_id?: string } = {};
+            if (securityGroupId !== undefined) {
+                params.security_group_id = securityGroupId;
+            }
+
+            let sgRules: any = await neutronApi.getSecurityGroupRules(params);
+            return {
+                content: [{ type: 'text', text: `获取安全组规则列表成功，返回安全组规则列表： ${JSON.stringify(sgRules)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取安全组规则列表失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
+    'get_security_group_rule',
+    '获取指定安全组规则ID的详情, 会自动使用已登录的token',
+    {
+        id: z
+            .string()
+            .describe('安全组规则id，必填参数'),
+    },
+    async ({
+        id,
+    }) => {
+        try {
+            let sgRule: any = await neutronApi.getSecurityGroupRule(id);
+            return {
+                content: [{ type: 'text', text: `获取安全组规则详情成功，返回安全组规则详情：${JSON.stringify(sgRule)}` }]
+            }
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `获取安全组规则详情失败，错误原因：${error}`,
+                    },
+                ],
+            }
+        }
+    }
+);
+
+server.tool(
     'create_server',
     '创建虚机, 会自动使用已登录的token',
     {
@@ -605,7 +1076,6 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('虚机名称, 可选参数'),
     },
     async ({
@@ -613,7 +1083,7 @@ server.tool(
     }) => {
         try {
             const params: { name?: string; } = {};
-            if (name !== '') {
+            if (name !== undefined) {
                 params.name = name;
             }
             let servers: any = await novaApi.getServers(params);
@@ -669,7 +1139,6 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('虚机规格名称, 可选参数'),
     },
     async ({
@@ -677,7 +1146,7 @@ server.tool(
     }) => {
         try {
             const params: { name?: string; } = {};
-            if (name !== '') {
+            if (name !== undefined) {
                 params.name = name;
             }
             let flavors: any = await novaApi.getFlavors(params);
@@ -733,7 +1202,6 @@ server.tool(
         name: z
             .string()
             .optional()
-            .default('')
             .describe('镜像名称, 可选参数'),
     },
     async ({
@@ -741,7 +1209,7 @@ server.tool(
     }) => {
         try {
             const params: { name?: string; } = {};
-            if (name !== '') {
+            if (name !== undefined) {
                 params.name = name;
             }
             let images: any = await glanceApi.getImages(params);

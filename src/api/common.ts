@@ -13,6 +13,12 @@ import type { OpenStackStandardError, NeutronApiError } from '../types.js';
  */
 export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
     const session = getCurrentSession(); // 检查认证
+
+    // 预处理查询参数
+    if (config.params !== undefined) {
+        config.params = preprocessParams(config.params);
+    }
+
     const fullConfig: AxiosRequestConfig = {
         ...config,
         headers: {
