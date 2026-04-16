@@ -1,0 +1,56 @@
+/**
+ * Identity MCP工具
+ */
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
+
+// 导入其他模块
+import type { Session } from '../types.js'
+import keystoneApi from '../api/keystone.js'
+
+export function registerIdentityTools(server: McpServer) {
+    server.tool(
+        'authenticate',
+        '登录OpenStack, 获取访问token，用于后续API接口的鉴权',
+        {
+            authUrl: z
+                .string()
+                .describe('Keystone v2的认证URL，必填参数'),
+            username: z
+                .string()
+                .describe('OpenStack的用户名，必填参数'),
+            password: z
+                .string()
+                .describe('OpenStack的密码，必填参数'),
+            projectName: z
+                .string()
+                .describe('Openstack的租户名或者项目名，必填参数'),
+            regionName: z
+                .string()
+                .describe('Openstack的区域名，必填参数'),
+        },
+        async ({
+            authUrl,
+            username,
+            password,
+            projectName,
+            regionName,
+        }) => {
+            try {
+                let session: Session = await keystoneApi.authenticate(authUrl, username, password, projectName, regionName);
+                return {
+                    content: [{ type: 'text', text: `认证成功，返回创建的session：${JSON.stringify(session)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `认证失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+}
