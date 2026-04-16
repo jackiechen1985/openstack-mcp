@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    // --- 核心输出配置 ---
+    "rootDir": "./src",
+    "outDir": "./dist",
+    
+    // 1. 生成 .d.ts 类型声明文件 (这是发布库的关键)
+    "declaration": true,
+    // 2. 生成 .d.ts.map 映射文件 (方便调试类型定义)
+    "declarationMap": true,
+    // 3. 生成 .js.map 源码映射 (方便调试逻辑)
+    "sourceMap": true,
+
+    // --- 环境与模块配置 ---
+    // 使用 NodeNext 确保 ESM/CommonJS 互操作性最佳
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // 如果你的库需要在较旧的 Node 版本运行，建议将 target 设为 "ES2020" 或 "ES2022"
+    "target": "ES2022",
+    
+    // 如果使用了 process, Buffer 等 Node 全局变量，必须取消注释并安装 @types/node
+    "types": ["node"],
+    "lib": ["ES2022"],
+
+    // --- 严格类型检查 (库开发建议保持严格) ---
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    // 消除 TS5101 警告
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

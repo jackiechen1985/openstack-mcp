@@ -1,0 +1,43 @@
+
+{
+  "name": "openstack-mcp",
+  "version": "1.0.0",
+  "description": "OpenStack MCP Server implementation",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "openstack-mcp": "dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup", 
+    "start": "tsx src/index.ts",
+    "debug": "npm run build && npx @modelcontextprotocol/inspector node ./dist/index.cjs",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "openstack",
+    "modelcontextprotocol"
+  ],
+  "author": "Chen Xiaobo",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/inspector": "^0.21.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios": "^1.15.0",
+    "mcp-http-server": "^1.2.4",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
