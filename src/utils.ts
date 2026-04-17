@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+
 /**
  * 通用工具函数
  */
@@ -31,16 +33,16 @@ export function isValidMacAddress(mac: string): boolean {
     // {5}: 前面的组合重复5次
     // [0-9A-Fa-f]{2}: 最后2个十六进制字符
     const regexColonDash = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-    
+
     // 无分隔符格式 (12个十六进制字符)
     const regexNoSeparator = /^[0-9A-Fa-f]{12}$/;
-    
+
     // Cisco 格式 (xxxx.xxxx.xxxx)
     const regexCisco = /^[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}$/;
 
-    return regexColonDash.test(macTrimmed) || 
-           regexNoSeparator.test(macTrimmed) || 
-           regexCisco.test(macTrimmed);
+    return regexColonDash.test(macTrimmed) ||
+        regexNoSeparator.test(macTrimmed) ||
+        regexCisco.test(macTrimmed);
 }
 
 /**
@@ -80,4 +82,13 @@ export function isStrictValidMacAddress(mac: string): boolean {
     }
 
     return true;
+}
+
+/**
+ * 本地读取JSON文件
+ * @param path 文件路径
+ * @returns JSON对象
+ */
+export function loadJsonFile<T = any>(path: string): T {
+    return JSON.parse(fs.readFileSync(path, 'utf-8'));
 }

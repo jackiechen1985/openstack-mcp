@@ -4,7 +4,7 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
 
-import { getCurrentSession } from './keystone.js';
+import { authenticate, getCurrentSession } from './keystone.js';
 import type { OpenStackStandardError, NeutronApiError } from '../types.js';
 
 /**
@@ -31,6 +31,13 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
         const response = await axios(fullConfig);
         return response.data;
     } catch (error) {
+        // 对401错误进行重新认证，并重试
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            const s = getCurrentSession();
+            await authenticate(s.authUrl, s.username, s.password, s.projectName, s.regionName);
+            return makeApiCall<T>(config);
+        }
+
         handleOpenStackError(error);
     }
 }

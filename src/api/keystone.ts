@@ -61,17 +61,24 @@ export async function authenticate(authUrl: string, username: string, password: 
             headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         });
 
-        const { token, serviceCatalog } = response.data.access;
+        const { metadata, serviceCatalog, token } = response.data.access;
         const neutronUrl = getServiceUrl(serviceCatalog, 'network', regionName);
         const novaUrl = getServiceUrl(serviceCatalog, 'compute', regionName);
         const glanceUrl = getServiceUrl(serviceCatalog, 'image', regionName);
 
         // 更新全局 Session
         currentSession = {
-            token: token.id,
+            authUrl: authUrl,
+            username: username,
+            password: password,
+            projectName: projectName,
+            regionName: regionName,
+            isAdmin: metadata.is_admin !== 0,
             neutronUrl: neutronUrl,
             novaUrl: novaUrl,
-            glanceUrl: glanceUrl
+            glanceUrl: glanceUrl,
+            token: token.id,
+            expires: token.expires
         };
 
         return currentSession;

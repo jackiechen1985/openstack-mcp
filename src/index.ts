@@ -9,6 +9,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 // 导入其他模块
 import { logger } from './log.js'
 import { registerAllTools } from './tools/index.js'
+import type { AppConfig } from './types.js'
+import { loadJsonFile } from './utils.js'
+import { authenticate } from './api/keystone.js';
 
 const VERSION: string = '1.0.0';
 
@@ -18,23 +21,33 @@ export const server = new McpServer({
     version: VERSION,
 });
 
+// 注册所有的MCP工具
 registerAllTools(server);
 
-async function init() {
+async function init(options: any) {
+    if (options.config) {
+        try {
+            // 加载配置文件
+            const c = loadJsonFile<AppConfig>(options.config);
+            // Keystone认证
+            await authenticate(c.authUrl, c.username, c.password, c.projectName, c.regionName);
+        } catch(error) {
+            logger.error('Failed to load config file:', error);
+            process.exit(1);
+        }
+    }
 }
 
 program
     .name('openstack-mcp-server')
     .description('MCP server for OpenStack')
     .version(VERSION)
-    .option(
-        '--host <host>',
-        'host to bind server to. Default is localhost. Use 0.0.0.0 to bind to all interfaces.'
-    )
+    .option('--config <config>', 'The path of the config JSON file.')
+    .option('--host <host>', 'host to bind server to. Default is localhost. Use 0.0.0.0 to bind to all interfaces.')
     .option('--port <port>', 'port to listen on for SSE and HTTP transport.')
     .action(async (options) => {
         try {
-            await init();
+            await init(options);
 
             // 根据是否有指定的 host 或 port 来决定启动模式
             if (options.port || options.host) {
