@@ -3,7 +3,43 @@
  */
 import axios from 'axios';
 
-import type { KeystoneAuthResponse, Session } from '../types.js';
+// 表示一次成功的 OpenStack 认证会话
+export interface Session {
+  // 请求参数
+  authUrl: string;
+  username: string;
+  password: string;
+  projectName: string;
+  regionName: string;
+  // 返回参数
+  isAdmin: boolean;
+  neutronUrl: string;
+  novaUrl: string;
+  glanceUrl: string;
+  token: string;
+  expires: string;
+}
+
+// Keystone v2 认证响应
+export interface KeystoneAuthResponse {
+  access: {
+    metadata: {
+      is_admin: number;
+    }
+    serviceCatalog: Array<{
+      type: string;
+      endpoints: Array<{
+        region: string;
+        publicURL?: string;
+        adminURL?: string;
+      }>;
+    }>;
+    token: { 
+      id: string;
+      expires: string;
+    };
+  };
+}
 
 // 全局会话变量
 let currentSession: Session | null = null;

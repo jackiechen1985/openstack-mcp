@@ -9,11 +9,19 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 // 导入其他模块
 import { logger } from './log.js'
 import { registerAllTools } from './tools/index.js'
-import type { AppConfig } from './types.js'
 import { loadJsonFile } from './utils.js'
 import { authenticate } from './api/keystone.js';
 
 const VERSION: string = '1.0.0';
+
+// 应用程序配置文件
+export interface AppConfig {
+  authUrl: string;
+  username: string;
+  password: string;
+  projectName: string;
+  regionName: string;
+}
 
 // Create server instance
 export const server = new McpServer({

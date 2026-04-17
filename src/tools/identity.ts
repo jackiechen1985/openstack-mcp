@@ -5,7 +5,6 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 // 导入其他模块
-import type { Session } from '../types.js'
 import keystoneApi from '../api/keystone.js'
 
 export function registerIdentityTools(server: McpServer) {
@@ -37,7 +36,7 @@ export function registerIdentityTools(server: McpServer) {
             regionName,
         }) => {
             try {
-                let session: Session = await keystoneApi.authenticate(authUrl, username, password, projectName, regionName);
+                const session = await keystoneApi.authenticate(authUrl, username, password, projectName, regionName);
                 return {
                     content: [{ type: 'text', text: `认证成功，返回创建的session：${JSON.stringify(session)}` }]
                 }

@@ -5,7 +5,18 @@ import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
 
 import { authenticate, getCurrentSession } from './keystone.js';
-import type { OpenStackStandardError, NeutronApiError } from '../types.js';
+
+// OpenStack API 响应的标准错误格式
+export interface OpenStackStandardError {
+  message?: string;
+}
+
+// Neutron API 特有的错误格式
+export interface NeutronApiError {
+  NeutronError?: {
+    message?: string;
+  };
+}
 
 /**
  * 通用 API 调用函数，自动添加认证头

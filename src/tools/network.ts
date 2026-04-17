@@ -25,7 +25,7 @@ export function registerNetworkTools(server: McpServer) {
             availabilityZone,
         }) => {
             try {
-                let network: any = await neutronApi.createNetwork(name, availabilityZone);
+                const network = await neutronApi.createNetwork(name, availabilityZone);
                 return {
                     content: [{ type: 'text', text: `创建网络成功，返回创建的网络：${JSON.stringify(network)}` }]
                 }
@@ -88,7 +88,7 @@ export function registerNetworkTools(server: McpServer) {
                 if (name !== undefined) {
                     params.name = name;
                 }
-                let networks: any = await neutronApi.getNetworks(params);
+                const networks = await neutronApi.getNetworks(params);
                 return {
                     content: [{ type: 'text', text: `获取网络列表成功，返回网络列表：${JSON.stringify(networks)}` }]
                 }
@@ -117,7 +117,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let network: any = await neutronApi.getNetwork(id);
+                const network = await neutronApi.getNetwork(id);
                 return {
                     content: [{ type: 'text', text: `获取网络详情成功，返回网络详情：${JSON.stringify(network)}` }]
                 }
@@ -178,7 +178,7 @@ export function registerNetworkTools(server: McpServer) {
             hostRoutes
         }) => {
             try {
-                let subnet: any = await neutronApi.createSubnet(name, networkId, cidr, ipVersion, gatewayIp, enableDhcp,
+                const subnet = await neutronApi.createSubnet(name, networkId, cidr, ipVersion, gatewayIp, enableDhcp,
                     dnsNameservers, hostRoutes);
                 return {
                     content: [{ type: 'text', text: `创建子网成功，返回创建的子网： ${JSON.stringify(subnet)}` }]
@@ -250,7 +250,7 @@ export function registerNetworkTools(server: McpServer) {
                 if (networkId !== undefined) {
                     params.network_id = networkId;
                 }
-                let subnets: any = await neutronApi.getSubnets(params);
+                const subnets = await neutronApi.getSubnets(params);
                 return {
                     content: [{ type: 'text', text: `获取子网列表成功，返回子网列表： ${JSON.stringify(subnets)}` }]
                 }
@@ -279,7 +279,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let subnet: any = await neutronApi.getSubnet(id);
+                const subnet = await neutronApi.getSubnet(id);
                 return {
                     content: [{ type: 'text', text: `获取子网详情成功，返回子网详情：${JSON.stringify(subnet)}` }]
                 }
@@ -342,7 +342,7 @@ export function registerNetworkTools(server: McpServer) {
             security_groups,
         }) => {
             try {
-                let port: any = await neutronApi.createPort(name, networkId, admin_state_up, allowed_address_pairs, fixed_ips,
+                const port = await neutronApi.createPort(name, networkId, admin_state_up, allowed_address_pairs, fixed_ips,
                     mac_address, port_security_enabled, security_groups);
                 return {
                     content: [{ type: 'text', text: `创建端口成功，返回创建的端口： ${JSON.stringify(port)}` }]
@@ -415,7 +415,7 @@ export function registerNetworkTools(server: McpServer) {
                     params.network_id = networkId;
                 }
 
-                let ports: any = await neutronApi.getPorts(params);
+                const ports = await neutronApi.getPorts(params);
                 return {
                     content: [{ type: 'text', text: `获取端口列表成功，返回端口列表： ${JSON.stringify(ports)}` }]
                 }
@@ -444,7 +444,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let port: any = await neutronApi.getPort(id);
+                const port = await neutronApi.getPort(id);
                 return {
                     content: [{ type: 'text', text: `获取端口详情成功，返回端口详情：${JSON.stringify(port)}` }]
                 }
@@ -473,7 +473,7 @@ export function registerNetworkTools(server: McpServer) {
             name,
         }) => {
             try {
-                let router: any = await neutronApi.createRouter(name);
+                const router = await neutronApi.createRouter(name);
                 return {
                     content: [{ type: 'text', text: `创建路由器成功，返回创建的路由器：${JSON.stringify(router)}` }]
                 }
@@ -536,7 +536,7 @@ export function registerNetworkTools(server: McpServer) {
                 if (name !== undefined) {
                     params.name = name;
                 }
-                let routers: any = await neutronApi.getRouters(params);
+                const routers = await neutronApi.getRouters(params);
                 return {
                     content: [{ type: 'text', text: `获取路由器列表成功，返回路由器列表：${JSON.stringify(routers)}` }]
                 }
@@ -565,7 +565,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let router: any = await neutronApi.getRouter(id);
+                const router = await neutronApi.getRouter(id);
                 return {
                     content: [{ type: 'text', text: `获取路由器详情成功，返回路由器详情：${JSON.stringify(router)}` }]
                 }
@@ -598,7 +598,7 @@ export function registerNetworkTools(server: McpServer) {
             subnetId
         }) => {
             try {
-                let interfaceInfo: any = await neutronApi.addRouterInterface(routerId, subnetId);
+                const interfaceInfo = await neutronApi.addRouterInterface(routerId, subnetId);
                 return {
                     content: [{ type: 'text', text: `绑定子网到路由器成功，返回绑定的接口信息：${JSON.stringify(interfaceInfo)}` }]
                 }
@@ -631,7 +631,7 @@ export function registerNetworkTools(server: McpServer) {
             subnetId
         }) => {
             try {
-                let interfaceInfo: any = await neutronApi.removeRouterInterface(routerId, subnetId);
+                const interfaceInfo = await neutronApi.removeRouterInterface(routerId, subnetId);
                 return {
                     content: [{ type: 'text', text: `路由器上解绑子网成功，返回解绑的接口信息：${JSON.stringify(interfaceInfo)}` }]
                 }
@@ -665,7 +665,7 @@ export function registerNetworkTools(server: McpServer) {
             stateful,
         }) => {
             try {
-                let sg: any = await neutronApi.createSecurityGroup(name, stateful);
+                const sg = await neutronApi.createSecurityGroup(name, stateful);
                 return {
                     content: [{ type: 'text', text: `创建安全组成功，返回创建的安全组： ${JSON.stringify(sg)}` }]
                 }
@@ -729,7 +729,7 @@ export function registerNetworkTools(server: McpServer) {
                     params.name = name;
                 }
 
-                let sgs: any = await neutronApi.getSecurityGroups(params);
+                const sgs = await neutronApi.getSecurityGroups(params);
                 return {
                     content: [{ type: 'text', text: `获取安全组列表成功，返回安全组列表： ${JSON.stringify(sgs)}` }]
                 }
@@ -758,7 +758,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let sg: any = await neutronApi.getSecurityGroup(id);
+                const sg = await neutronApi.getSecurityGroup(id);
                 return {
                     content: [{ type: 'text', text: `获取安全组详情成功，返回安全组详情：${JSON.stringify(sg)}` }]
                 }
@@ -825,7 +825,7 @@ export function registerNetworkTools(server: McpServer) {
             portRangeMax,
         }) => {
             try {
-                let sgRule: any = await neutronApi.createSecurityGroupRule(securityGroupId, direction, ethertype, protocol,
+                const sgRule = await neutronApi.createSecurityGroupRule(securityGroupId, direction, ethertype, protocol,
                     remoteIpPrefix, remoteGroupId, portRangeMin, portRangeMax);
                 return {
                     content: [{ type: 'text', text: `创建安全组规则成功，返回创建的安全组规则： ${JSON.stringify(sgRule)}` }]
@@ -890,7 +890,7 @@ export function registerNetworkTools(server: McpServer) {
                     params.security_group_id = securityGroupId;
                 }
 
-                let sgRules: any = await neutronApi.getSecurityGroupRules(params);
+                const sgRules = await neutronApi.getSecurityGroupRules(params);
                 return {
                     content: [{ type: 'text', text: `获取安全组规则列表成功，返回安全组规则列表： ${JSON.stringify(sgRules)}` }]
                 }
@@ -919,7 +919,7 @@ export function registerNetworkTools(server: McpServer) {
             id,
         }) => {
             try {
-                let sgRule: any = await neutronApi.getSecurityGroupRule(id);
+                const sgRule = await neutronApi.getSecurityGroupRule(id);
                 return {
                     content: [{ type: 'text', text: `获取安全组规则详情成功，返回安全组规则详情：${JSON.stringify(sgRule)}` }]
                 }
