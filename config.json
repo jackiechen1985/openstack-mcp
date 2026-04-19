@@ -1,9 +1,7 @@
 {
-    "identity": {
-        "authUrl": "http://100.120.8.37:5000/v2.0/tokens",
-        "username": "xiaobo",
-        "password": "xiaobo",
-        "projectName": "xiaobo",
-        "regionName": "RegionOne"
-    }
+    "authUrl": "http://100.120.8.37:5000/v2.0/tokens",
+    "username": "xiaobo",
+    "password": "xiaobo",
+    "projectName": "xiaobo",
+    "regionName": "RegionOne"
 }

@@ -10,7 +10,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { logger } from './log.js'
 import { registerAllTools } from './tools/index.js'
 import { loadJsonFile } from './utils.js'
-import { authenticate } from './api/keystone.js';
+import { authV2 } from './api/keystone.js';
 
 const VERSION: string = '1.0.0';
 
@@ -38,7 +38,7 @@ async function init(options: any) {
             // 加载配置文件
             const c = loadJsonFile<AppConfig>(options.config);
             // Keystone认证
-            await authenticate(c.authUrl, c.username, c.password, c.projectName, c.regionName);
+            await authV2(c.authUrl, c.username, c.password, c.projectName, c.regionName);
         } catch(error) {
             logger.error('Failed to load config file:', error);
             process.exit(1);

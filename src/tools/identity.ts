@@ -9,7 +9,7 @@ import keystoneApi from '../api/keystone.js'
 
 export function registerIdentityTools(server: McpServer) {
     server.tool(
-        'authenticate',
+        'auth_v2',
         '登录OpenStack, 获取访问token，用于后续API接口的鉴权',
         {
             authUrl: z
@@ -36,9 +36,9 @@ export function registerIdentityTools(server: McpServer) {
             regionName,
         }) => {
             try {
-                const session = await keystoneApi.authenticate(authUrl, username, password, projectName, regionName);
+                const response = await keystoneApi.authV2(authUrl, username, password, projectName, regionName);
                 return {
-                    content: [{ type: 'text', text: `认证成功，返回创建的session：${JSON.stringify(session)}` }]
+                    content: [{ type: 'text', text: `认证成功，返回结果详情：${JSON.stringify(response)}` }]
                 }
             } catch (error) {
                 return {

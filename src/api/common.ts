@@ -4,7 +4,7 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
 
-import { authenticate, getCurrentSession } from './keystone.js';
+import { authV2, getCurrentSession } from './keystone.js';
 
 // OpenStack API 响应的标准错误格式
 export interface OpenStackStandardError {
@@ -45,7 +45,7 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
         // 对401错误进行重新认证，并重试
         if (axios.isAxiosError(error) && error.response?.status === 401) {
             const s = getCurrentSession();
-            await authenticate(s.authUrl, s.username, s.password, s.projectName, s.regionName);
+            await authV2(s.authUrl, s.username, s.password, s.projectName, s.regionName);
             return makeApiCall<T>(config);
         }
 

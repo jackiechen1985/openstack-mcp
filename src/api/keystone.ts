@@ -5,40 +5,51 @@ import axios from 'axios';
 
 // 表示一次成功的 OpenStack 认证会话
 export interface Session {
-  // 请求参数
-  authUrl: string;
-  username: string;
-  password: string;
-  projectName: string;
-  regionName: string;
-  // 返回参数
-  isAdmin: boolean;
-  neutronUrl: string;
-  novaUrl: string;
-  glanceUrl: string;
-  token: string;
-  expires: string;
+    // 请求参数
+    authUrl: string;
+    username: string;
+    password: string;
+    projectName: string;
+    regionName: string;
+    // 返回参数
+    isAdmin: boolean;
+    neutronUrl: string;
+    novaUrl: string;
+    glanceUrl: string;
+    token: string;
+    expires: string;
 }
 
-// Keystone v2 认证响应
-export interface KeystoneAuthResponse {
-  access: {
-    metadata: {
-      is_admin: number;
+// Keystone v2 认证请求
+export interface AuthV2Request {
+    auth: {
+        tenantName: string;
+        passwordCredentials: {
+            username: string;
+            password: string;
+        }
     }
-    serviceCatalog: Array<{
-      type: string;
-      endpoints: Array<{
-        region: string;
-        publicURL?: string;
-        adminURL?: string;
-      }>;
-    }>;
-    token: { 
-      id: string;
-      expires: string;
+};
+
+// Keystone v2 认证响应
+export interface AuthV2Response {
+    access: {
+        metadata: {
+            is_admin: number;
+        }
+        serviceCatalog: Array<{
+            type: string;
+            endpoints: Array<{
+                region: string;
+                publicURL?: string;
+                adminURL?: string;
+            }>;
+        }>;
+        token: {
+            id: string;
+            expires: string;
+        };
     };
-  };
 }
 
 // 全局会话变量
@@ -51,7 +62,7 @@ let currentSession: Session | null = null;
  * @param regionName 目标区域名称
  * @returns 找到的 URL
  */
-function getServiceUrl(catalog: KeystoneAuthResponse['access']['serviceCatalog'], type: string, regionName: string): string {
+function getServiceUrl(catalog: AuthV2Response['access']['serviceCatalog'], type: string, regionName: string): string {
     const service = catalog.find(s => s.type === type);
     if (!service) {
         throw new Error(`未找到服务 (type: ${type})`);
@@ -83,9 +94,9 @@ function getServiceUrl(catalog: KeystoneAuthResponse['access']['serviceCatalog']
  * @param regionName 区域名
  * @returns 认证成功的 Session 对象
  */
-export async function authenticate(authUrl: string, username: string, password: string, projectName: string, regionName: string): Promise<Session> {
+export async function authV2(authUrl: string, username: string, password: string, projectName: string, regionName: string): Promise<AuthV2Response> {
     try {
-        const response = await axios.post<KeystoneAuthResponse>(authUrl, {
+        const response = await axios.post<AuthV2Response>(authUrl, {
             auth: {
                 tenantName: projectName,
                 passwordCredentials: {
@@ -117,7 +128,7 @@ export async function authenticate(authUrl: string, username: string, password: 
             expires: token.expires
         };
 
-        return currentSession;
+        return response.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
@@ -152,7 +163,7 @@ export function clearCurrentSession(): void {
 
 // 将所有函数聚合到一个对象中
 const keystoneApi = {
-    authenticate,
+    authV2,
     getCurrentSession,
     clearCurrentSession
 };
