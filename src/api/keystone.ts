@@ -20,17 +20,6 @@ export interface Session {
     expires: string;
 }
 
-// Keystone v2 认证请求
-export interface AuthV2Request {
-    auth: {
-        tenantName: string;
-        passwordCredentials: {
-            username: string;
-            password: string;
-        }
-    }
-};
-
 // Keystone v2 认证响应
 export interface AuthV2Response {
     access: {
