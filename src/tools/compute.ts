@@ -36,7 +36,7 @@ export function registerComputeTools(server: McpServer) {
             networks
         }) => {
             try {
-                let server: any = await novaApi.createServer(name, flavorId, imageId, availabilityZone, networks);
+                const server = await novaApi.createServer(name, flavorId, imageId, availabilityZone, networks);
                 return {
                     content: [{ type: 'text', text: `创建虚机成功，返回创建的虚机：${JSON.stringify(server)}` }]
                 }
@@ -99,7 +99,7 @@ export function registerComputeTools(server: McpServer) {
                 if (name !== undefined) {
                     params.name = name;
                 }
-                let servers: any = await novaApi.getServers(params);
+                const servers = await novaApi.getServers(params);
                 return {
                     content: [{ type: 'text', text: `获取虚机列表成功，返回虚机列表：${JSON.stringify(servers)}` }]
                 }
@@ -128,7 +128,7 @@ export function registerComputeTools(server: McpServer) {
             id,
         }) => {
             try {
-                let server: any = await novaApi.getServer(id);
+                const server = await novaApi.getServer(id);
                 return {
                     content: [{ type: 'text', text: `获取虚机详情成功，返回虚机详情：${JSON.stringify(server)}` }]
                 }
@@ -138,6 +138,366 @@ export function registerComputeTools(server: McpServer) {
                         {
                             type: 'text',
                             text: `获取虚机详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'start_server',
+        '启动虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.startServer(id);
+                return {
+                    content: [{ type: 'text', text: `启动虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `启动虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'stop_server',
+        '停止虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.stopServer(id);
+                return {
+                    content: [{ type: 'text', text: `停止虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `停止虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'soft_reboot_server',
+        '软重启虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.softRebootServer(id);
+                return {
+                    content: [{ type: 'text', text: `软重启虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `软重启虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'hard_reboot_server',
+        '硬重启虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.hardRebootServer(id);
+                return {
+                    content: [{ type: 'text', text: `硬重启虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `硬重启虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'pause_server',
+        '暂停虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.pauseServer(id);
+                return {
+                    content: [{ type: 'text', text: `暂停虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `暂停虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'unpause_server',
+        '取消暂停虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.unpauseServer(id);
+                return {
+                    content: [{ type: 'text', text: `取消暂停虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `取消暂停虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'suspend_server',
+        '挂起虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.suspendServer(id);
+                return {
+                    content: [{ type: 'text', text: `挂起虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `挂起虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'resume_server',
+        '取消挂起虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.resumeServer(id);
+                return {
+                    content: [{ type: 'text', text: `取消挂起虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `取消挂起虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'lock_server',
+        '锁定虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.lockServer(id);
+                return {
+                    content: [{ type: 'text', text: `锁定虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `锁定虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'unlock_server',
+        '解除锁定虚机, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.unlockServer(id);
+                return {
+                    content: [{ type: 'text', text: `解除锁定虚机成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `解除锁定虚机失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'create_flavor',
+        '创建虚机规格, 会自动使用已登录的token',
+        {
+            name: z
+                .string()
+                .describe('虚机名称，必填参数'),
+            vcpus: z
+                .number()
+                .describe('虚拟CPU的个数，必填参数'),
+            ram: z
+                .number()
+                .describe('内存的大小（MB），必填参数'),
+            disk: z
+                .number()
+                .describe('磁盘的大小（GB），必填参数'),
+        },
+        async ({
+            name,
+            vcpus,
+            ram,
+            disk,
+        }) => {
+            try {
+                const flavor = await novaApi.createFlavor(name, vcpus, ram, disk);
+                return {
+                    content: [{ type: 'text', text: `创建虚机规格成功，返回创建的虚机规格：${JSON.stringify(server)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `创建虚机规格失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'delete_flavor',
+        '删除虚机规格, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('虚机规格id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await novaApi.deleteFlavor(id);
+                return {
+                    content: [{ type: 'text', text: `删除虚机规格成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `删除虚机规格失败，错误原因：${error}`,
                         },
                     ],
                 }
@@ -162,7 +522,7 @@ export function registerComputeTools(server: McpServer) {
                 if (name !== undefined) {
                     params.name = name;
                 }
-                let flavors: any = await novaApi.getFlavors(params);
+                const flavors = await novaApi.getFlavors(params);
                 return {
                     content: [{ type: 'text', text: `获取虚机规格列表成功，返回虚机规格列表：${JSON.stringify(flavors)}` }]
                 }
@@ -191,7 +551,7 @@ export function registerComputeTools(server: McpServer) {
             id,
         }) => {
             try {
-                let flavor: any = await novaApi.getFlavor(id);
+                const flavor = await novaApi.getFlavor(id);
                 return {
                     content: [{ type: 'text', text: `获取虚机规格详情成功，返回虚机规格详情：${JSON.stringify(flavor)}` }]
                 }

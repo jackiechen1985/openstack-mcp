@@ -25,7 +25,7 @@ export function registerImageTools(server: McpServer) {
                 if (name !== undefined) {
                     params.name = name;
                 }
-                let images: any = await glanceApi.getImages(params);
+                const images = await glanceApi.getImages(params);
                 return {
                     content: [{ type: 'text', text: `获取镜像列表成功，返回镜像列表：${JSON.stringify(images)}` }]
                 }
@@ -54,7 +54,7 @@ export function registerImageTools(server: McpServer) {
             id,
         }) => {
             try {
-                let image: any = await glanceApi.getImage(id);
+                const image = await glanceApi.getImage(id);
                 return {
                     content: [{ type: 'text', text: `获取镜像详情成功，返回镜像详情：${JSON.stringify(image)}` }]
                 }
