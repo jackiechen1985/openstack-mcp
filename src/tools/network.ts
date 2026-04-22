@@ -306,44 +306,55 @@ export function registerNetworkTools(server: McpServer) {
             networkId: z
                 .string()
                 .describe('网络id，必填参数'),
-            admin_state_up: z
+            adminStateUp: z
                 .boolean()
                 .optional()
                 .describe('是否激活该端口, 可选参数'),
-            allowed_address_pairs: z
-                .array(z.string())
+            allowedAddressPairs: z
+                .array(z.object({
+                    ip_address: z.string(),
+                    mac_address: z.string()
+                }))
                 .optional()
-                .describe('允许通过该端口的IP地址列表，可选参数'),
-            fixed_ips: z
-                .array(z.string())
+                .describe('允许通过该端口的IP/MAC地址对列表，格式为[{ip_address: "xxx", mac_address: "xxx"}], 可选参数'),
+            fixedIps: z
+                .array(z.object({
+                    ip_address: z.string(),
+                    subnet_id: z.string()
+                }))
                 .optional()
-                .describe('端口的固定IP地址（要求格式例如IPv4: 192.168.0.1，IPv6: 2026:10::1）, 可选参数'),
-            mac_address: z
+                .describe('端口的固定IP地址列表，格式为[{ip_address: "xxx", subnet_id: "xxx"}], 可选参数'),
+            macAddress: z
                 .string()
                 .optional()
                 .describe('端口的MAC地址, 可选参数'),
-            port_security_enabled: z
+            portSecurityEnabled: z
                 .boolean()
                 .optional()
                 .describe('是否激活该端口的安全属性, 可选参数'),
-            security_groups: z
+            securityGroups: z
                 .array(z.string())
                 .optional()
                 .describe('安全组列表, 可选参数'),
+            qosPolicyId: z
+                .string()
+                .optional()
+                .describe('QoS策略ID, 可选参数'),
         },
         async ({
             name,
             networkId,
-            admin_state_up,
-            allowed_address_pairs,
-            fixed_ips,
-            mac_address,
-            port_security_enabled,
-            security_groups,
+            adminStateUp,
+            allowedAddressPairs,
+            fixedIps,
+            macAddress,
+            portSecurityEnabled,
+            securityGroups,
+            qosPolicyId,
         }) => {
             try {
-                const port = await neutronApi.createPort(name, networkId, admin_state_up, allowed_address_pairs, fixed_ips,
-                    mac_address, port_security_enabled, security_groups);
+                const port = await neutronApi.createPort(name, networkId, adminStateUp, allowedAddressPairs, fixedIps,
+                    macAddress, portSecurityEnabled, securityGroups, qosPolicyId);
                 return {
                     content: [{ type: 'text', text: `创建端口成功，返回创建的端口： ${JSON.stringify(port)}` }]
                 }
