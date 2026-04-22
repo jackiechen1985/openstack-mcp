@@ -9,6 +9,7 @@ import { z } from 'zod';
 import neutronApi from '../api/neutron.js'
 
 export function registerNetworkTools(server: McpServer) {
+    // --- 网络相关工具 ---
     server.tool(
         'create_network',
         '创建网络, 会自动使用已登录的token',
@@ -134,6 +135,7 @@ export function registerNetworkTools(server: McpServer) {
         }
     );
 
+    // --- 子网相关工具 ---
     server.tool(
         'create_subnet',
         '创建子网, 会自动使用已登录的token。注意：如果用户未指定网络id，请提示用户先使用create_network创建网络',
@@ -296,6 +298,7 @@ export function registerNetworkTools(server: McpServer) {
         }
     );
 
+    // --- 端口相关工具 ---
     server.tool(
         'create_port',
         '创建端口, 会自动使用已登录的token。注意：如果用户未指定网络id，请提示用户先使用create_network创建网络',
@@ -472,6 +475,7 @@ export function registerNetworkTools(server: McpServer) {
         }
     );
 
+    // --- 路由器相关工具 ---
     server.tool(
         'create_router',
         '创建路由器（VPC是路由器的别名）, 会自动使用已登录的token',
@@ -659,6 +663,7 @@ export function registerNetworkTools(server: McpServer) {
         }
     );
 
+    // --- 安全组相关工具 ---
     server.tool(
         'create_security_group',
         '创建安全组, 会自动使用已登录的token',
@@ -786,6 +791,7 @@ export function registerNetworkTools(server: McpServer) {
         }
     );
 
+    // --- 安全组规则相关工具 ---
     server.tool(
         'create_security_group_rule',
         '创建安全组规则, 会自动使用已登录的token',
@@ -940,6 +946,723 @@ export function registerNetworkTools(server: McpServer) {
                         {
                             type: 'text',
                             text: `获取安全组规则详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    // --- QoS Policy 相关工具 ---
+    server.tool(
+        'create_qos_policy',
+        '创建QoS策略, 会自动使用已登录的token',
+        {
+            name: z
+                .string()
+                .describe('QoS策略名称，必填参数'),
+            description: z
+                .string()
+                .optional()
+                .describe('QoS策略描述，可选参数'),
+            shared: z
+                .boolean()
+                .optional()
+                .describe('QoS策略是否共享，可选参数'),
+            isDefault: z
+                .boolean()
+                .optional()
+                .describe('QoS策略是否默认，可选参数'),
+        },
+        async ({
+            name,
+            description,
+            shared,
+            isDefault,
+        }) => {
+            try {
+                const policy = await neutronApi.createQoSPolicy(name, description, shared, isDefault);
+                return {
+                    content: [{ type: 'text', text: `创建QoS策略成功，返回创建的QoS策略：${JSON.stringify(policy)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `创建QoS策略失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'delete_qos_policy',
+        '删除QoS策略, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                await neutronApi.deleteQoSPolicy(id);
+                return {
+                    content: [{ type: 'text', text: `删除QoS策略成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `删除QoS策略失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_policies',
+        '获取QoS策略列表, 会自动使用已登录的token',
+        {
+            name: z
+                .string()
+                .optional()
+                .describe('QoS策略名称，可选参数'),
+        },
+        async ({
+            name,
+        }) => {
+            try {
+                const params: { name?: string } = {};
+                if (name !== undefined) {
+                    params.name = name;
+                }
+                const policies = await neutronApi.getQoSPolicies(params);
+                return {
+                    content: [{ type: 'text', text: `获取QoS策略列表成功，返回QoS策略列表：${JSON.stringify(policies)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS策略列表失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_policy',
+        '获取指定QoS策略ID的详情, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+        },
+        async ({
+            id,
+        }) => {
+            try {
+                const policy = await neutronApi.getQoSPolicy(id);
+                return {
+                    content: [{ type: 'text', text: `获取QoS策略详情成功，返回QoS策略详情：${JSON.stringify(policy)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS策略详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'update_qos_policy',
+        '更新QoS策略, 会自动使用已登录的token',
+        {
+            id: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            name: z
+                .string()
+                .optional()
+                .describe('QoS策略名称，可选参数'),
+            description: z
+                .string()
+                .optional()
+                .describe('QoS策略描述，可选参数'),
+            shared: z
+                .boolean()
+                .optional()
+                .describe('QoS策略是否共享，可选参数'),
+            isDefault: z
+                .boolean()
+                .optional()
+                .describe('QoS策略是否默认，可选参数'),
+        },
+        async ({
+            id,
+            name,
+            description,
+            shared,
+            isDefault,
+        }) => {
+            try {
+                const policy = await neutronApi.updateQoSPolicy(id, name, description, shared, isDefault);
+                return {
+                    content: [{ type: 'text', text: `更新QoS策略成功，返回更新的QoS策略：${JSON.stringify(policy)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `更新QoS策略失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    // --- QoS Bandwidth Limit Rule 相关工具 ---
+    server.tool(
+        'create_qos_bandwidth_limit_rule',
+        '创建QoS带宽限制规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            maxKbps: z
+                .number()
+                .optional()
+                .describe('最大带宽 (kbps)，可选参数'),
+            maxBurstKbps: z
+                .number()
+                .optional()
+                .describe('最大突发带宽 (kbps)，可选参数'),
+            direction: z
+                .string()
+                .optional()
+                .describe('方向 (ingress/egress)，可选参数'),
+        },
+        async ({
+            policyId,
+            maxKbps,
+            maxBurstKbps,
+            direction,
+        }) => {
+            try {
+                const rule = await neutronApi.createQoSBandwidthLimitRule(policyId, maxKbps, maxBurstKbps, direction);
+                return {
+                    content: [{ type: 'text', text: `创建QoS带宽限制规则成功，返回创建的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `创建QoS带宽限制规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'delete_qos_bandwidth_limit_rule',
+        '删除QoS带宽限制规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                await neutronApi.deleteQoSBandwidthLimitRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `删除QoS带宽限制规则成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `删除QoS带宽限制规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_bandwidth_limit_rules',
+        '获取QoS带宽限制规则列表, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+        },
+        async ({
+            policyId,
+        }) => {
+            try {
+                const rules = await neutronApi.getQoSBandwidthLimitRules(policyId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS带宽限制规则列表成功，返回规则列表：${JSON.stringify(rules)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS带宽限制规则列表失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_bandwidth_limit_rule',
+        '获取指定QoS带宽限制规则ID的详情, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                const rule = await neutronApi.getQoSBandwidthLimitRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS带宽限制规则详情成功，返回规则详情：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS带宽限制规则详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'update_qos_bandwidth_limit_rule',
+        '更新QoS带宽限制规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+            maxKbps: z
+                .number()
+                .optional()
+                .describe('最大带宽 (kbps)，可选参数'),
+            maxBurstKbps: z
+                .number()
+                .optional()
+                .describe('最大突发带宽 (kbps)，可选参数'),
+            direction: z
+                .string()
+                .optional()
+                .describe('方向 (ingress/egress)，可选参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+            maxKbps,
+            maxBurstKbps,
+            direction,
+        }) => {
+            try {
+                const rule = await neutronApi.updateQoSBandwidthLimitRule(policyId, ruleId, maxKbps, maxBurstKbps, direction);
+                return {
+                    content: [{ type: 'text', text: `更新QoS带宽限制规则成功，返回更新的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `更新QoS带宽限制规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    // --- QoS DSCP Marking Rule 相关工具 ---
+    server.tool(
+        'create_qos_dscp_marking_rule',
+        '创建QoS DSCP标记规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            dscpMark: z
+                .number()
+                .describe('DSCP标记值，必填参数'),
+        },
+        async ({
+            policyId,
+            dscpMark,
+        }) => {
+            try {
+                const rule = await neutronApi.createQoSDscpMarkingRule(policyId, dscpMark);
+                return {
+                    content: [{ type: 'text', text: `创建QoS DSCP标记规则成功，返回创建的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `创建QoS DSCP标记规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'delete_qos_dscp_marking_rule',
+        '删除QoS DSCP标记规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                await neutronApi.deleteQoSDscpMarkingRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `删除QoS DSCP标记规则成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `删除QoS DSCP标记规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_dscp_marking_rules',
+        '获取QoS DSCP标记规则列表, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+        },
+        async ({
+            policyId,
+        }) => {
+            try {
+                const rules = await neutronApi.getQoSDscpMarkingRules(policyId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS DSCP标记规则列表成功，返回规则列表：${JSON.stringify(rules)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS DSCP标记规则列表失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_dscp_marking_rule',
+        '获取指定QoS DSCP标记规则ID的详情, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                const rule = await neutronApi.getQoSDscpMarkingRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS DSCP标记规则详情成功，返回规则详情：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS DSCP标记规则详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'update_qos_dscp_marking_rule',
+        '更新QoS DSCP标记规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+            dscpMark: z
+                .number()
+                .optional()
+                .describe('DSCP标记值，可选参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+            dscpMark,
+        }) => {
+            try {
+                const rule = await neutronApi.updateQoSDscpMarkingRule(policyId, ruleId, dscpMark);
+                return {
+                    content: [{ type: 'text', text: `更新QoS DSCP标记规则成功，返回更新的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `更新QoS DSCP标记规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    // --- QoS Minimum Bandwidth Rule 相关工具 ---
+    server.tool(
+        'create_qos_minimum_bandwidth_rule',
+        '创建QoS最小带宽规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            minKbps: z
+                .number()
+                .describe('最小带宽 (kbps)，必填参数'),
+            direction: z
+                .string()
+                .optional()
+                .describe('方向 (ingress/egress)，可选参数'),
+        },
+        async ({
+            policyId,
+            minKbps,
+            direction,
+        }) => {
+            try {
+                const rule = await neutronApi.createQoSMinimumBandwidthRule(policyId, minKbps, direction);
+                return {
+                    content: [{ type: 'text', text: `创建QoS最小带宽规则成功，返回创建的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `创建QoS最小带宽规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'delete_qos_minimum_bandwidth_rule',
+        '删除QoS最小带宽规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                await neutronApi.deleteQoSMinimumBandwidthRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `删除QoS最小带宽规则成功` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `删除QoS最小带宽规则失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_minimum_bandwidth_rules',
+        '获取QoS最小带宽规则列表, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+        },
+        async ({
+            policyId,
+        }) => {
+            try {
+                const rules = await neutronApi.getQoSMinimumBandwidthRules(policyId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS最小带宽规则列表成功，返回规则列表：${JSON.stringify(rules)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS最小带宽规则列表失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'get_qos_minimum_bandwidth_rule',
+        '获取指定QoS最小带宽规则ID的详情, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+        }) => {
+            try {
+                const rule = await neutronApi.getQoSMinimumBandwidthRule(policyId, ruleId);
+                return {
+                    content: [{ type: 'text', text: `获取QoS最小带宽规则详情成功，返回规则详情：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `获取QoS最小带宽规则详情失败，错误原因：${error}`,
+                        },
+                    ],
+                }
+            }
+        }
+    );
+
+    server.tool(
+        'update_qos_minimum_bandwidth_rule',
+        '更新QoS最小带宽规则, 会自动使用已登录的token',
+        {
+            policyId: z
+                .string()
+                .describe('QoS策略id，必填参数'),
+            ruleId: z
+                .string()
+                .describe('规则id，必填参数'),
+            minKbps: z
+                .number()
+                .describe('最小带宽 (kbps)，必填参数'),
+            direction: z
+                .string()
+                .optional()
+                .describe('方向 (ingress/egress)，可选参数'),
+        },
+        async ({
+            policyId,
+            ruleId,
+            minKbps,
+            direction,
+        }) => {
+            try {
+                const rule = await neutronApi.updateQoSMinimumBandwidthRule(policyId, ruleId, minKbps, direction);
+                return {
+                    content: [{ type: 'text', text: `更新QoS最小带宽规则成功，返回更新的规则：${JSON.stringify(rule)}` }]
+                }
+            } catch (error) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `更新QoS最小带宽规则失败，错误原因：${error}`,
                         },
                     ],
                 }
