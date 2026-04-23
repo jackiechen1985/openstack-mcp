@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsup",
     "start": "tsx src/index.ts",
-    "debug": "npm run build && npx @modelcontextprotocol/inspector node ./dist/index.cjs --log-file ./openstack-mcp.log --log-level debug",
+    "debug": "npm run build && npx @modelcontextprotocol/inspector node ./dist/index.cjs --config-file ./config.json --log-file ./openstack-mcp.log --log-level debug",
     "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

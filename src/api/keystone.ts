@@ -66,7 +66,7 @@ export async function authV2(authUrl: string, username: string, password: string
     };
 
     // 记录请求信息
-    logger.debug('HTTP Request:', {
+    logger.debug('****** Sending HTTP Request ******', {
         url: authUrl,
         method: 'POST',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
@@ -79,10 +79,9 @@ export async function authV2(authUrl: string, username: string, password: string
         });
 
         // 记录响应信息
-        logger.debug('HTTP Response:', {
+        logger.debug('****** Received HTTP Response ******', {
             url: authUrl,
             status: response.status,
-            statusText: response.statusText,
             headers: response.headers,
             data: response.data
         });
@@ -115,10 +114,9 @@ export async function authV2(authUrl: string, username: string, password: string
 
             // 记录错误响应信息
             if (error.response) {
-                logger.error('HTTP Error Response:', {
+                logger.error('****** Received HTTP Error Response ******', {
                     url: authUrl,
                     status: error.response.status,
-                    statusText: error.response.statusText,
                     headers: error.response.headers,
                     data: error.response.data
                 });
@@ -298,7 +296,7 @@ async function authV3(
  */
 export function getCurrentSession(): Session {
     if (!currentSession) {
-        throw new Error(`未认证，请先调用 keystone_v2_auth 工具登录 OpenStack`);
+        throw new Error(`未认证，请先调用 auth_v2或auth_v3 工具登录 OpenStack`);
     }
     return currentSession;
 }

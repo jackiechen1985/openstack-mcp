@@ -23,8 +23,9 @@ export interface NeutronApiError {
 /**
  * 通用 API 调用函数，自动添加认证头
  * @param config Axios 请求配置
+ * @param maxRetries 最多重试次数
  */
-export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
+export async function makeApiCall<T>(config: AxiosRequestConfig, maxRetries: number = 1): Promise<T> {
     const logger = getLogger();
     const session = getCurrentSession(); // 检查认证
 
@@ -42,7 +43,7 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
     };
 
     // 记录请求信息
-    logger.debug('HTTP Request:', {
+    logger.debug('****** Sending HTTP Request ******', {
         url: fullConfig.url,
         method: fullConfig.method || 'GET',
         headers: fullConfig.headers,
@@ -53,7 +54,7 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
     try {
         const response = await axios(fullConfig);
         // 记录响应信息
-        logger.debug('HTTP Response:', {
+        logger.debug('****** Received HTTP Response ******', {
             url: fullConfig.url,
             status: response.status,
             headers: response.headers,
@@ -64,21 +65,24 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
     } catch (error) {
         // 记录错误响应信息
         if (axios.isAxiosError(error) && error.response) {
-            if (error.response) {
-                logger.debug('HTTP Error Response:', {
-                    url: fullConfig.url,
-                    status: error.response.status,
-                    headers: error.response.headers,
-                    data: error.response.data
-                });
-            }
+            logger.debug('****** Received HTTP Error Response ******', {
+                url: fullConfig.url,
+                status: error.response.status,
+                headers: error.response.headers,
+                data: error.response.data
+            });
         }
 
-        // 对401错误进行重新认证，并重试
+        // 对401错误进行重新认证，并最多重试一次
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-            const s = getCurrentSession();
-            await authV2(s.authUrl, s.username, s.password, s.projectName, s.regionName);
-            return makeApiCall<T>(config);
+            if (maxRetries > 0) {
+                logger.info('Token expired, re-authenticating...')
+                const s = getCurrentSession();
+                await authV2(s.authUrl, s.username, s.password, s.projectName, s.regionName);
+                return makeApiCall<T>(config, maxRetries - 1);
+            } else {
+                logger.error('Re-authentication failed after retry');
+            }
         }
 
         handleOpenStackError(error);

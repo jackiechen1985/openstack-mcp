@@ -38,10 +38,10 @@ async function init(options: any) {
     } else {
         createLogger(options.logLevel)
     }
-    if (options.config) {
+    if (options.configFile) {
         try {
             // 加载配置文件
-            const c = loadJsonFile<AppConfig>(options.config);
+            const c = loadJsonFile<AppConfig>(options.configFile);
             // Keystone认证
             await authV2(c.authUrl, c.username, c.password, c.projectName, c.regionName);
         } catch(error) {
@@ -55,7 +55,7 @@ program
     .name('openstack-mcp-server')
     .description('MCP server for OpenStack')
     .version(VERSION)
-    .option('--config <config>', 'The path of the config JSON file.')
+    .option('--config-file <configFile>', 'The path of the config JSON file.')
     .option('--host <host>', 'host to bind server to. Default is localhost. Use 0.0.0.0 to bind to all interfaces.')
     .option('--port <port>', 'port to listen on for SSE and HTTP transport.')
     .option('--log-file <logFile>', 'The path of the log file.')

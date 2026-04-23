@@ -52,7 +52,7 @@ async function getServer(id: string) {
     const session = getCurrentSession();
     return makeApiCall<{ server: Server }>({
         method: 'GET',
-        url: `${session.novaUrl}/servers/detail/${id}`,
+        url: `${session.novaUrl}/servers/${id}`,
     });
 }
 
@@ -69,7 +69,7 @@ async function updateServer(id: string, name?: string, description?: string) {
 
     return makeApiCall<{ server: Server }>({
         method: 'PUT',
-        url: `${session.novaUrl}/servers/detail/${id}`,
+        url: `${session.novaUrl}/servers/${id}`,
         data: serverData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
     });
