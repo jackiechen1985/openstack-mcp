@@ -4,6 +4,7 @@
 import axios from 'axios';
 
 // 导入其他模块
+import { getLogger } from '../log.js';
 import type {
     Session,
     AuthV2Request, AuthV2Response,
@@ -53,19 +54,37 @@ function getServiceUrlV2(catalog: AuthV2Response['access']['serviceCatalog'], ty
  * @returns 认证成功的 Session 对象
  */
 export async function authV2(authUrl: string, username: string, password: string, projectName: string, regionName: string): Promise<AuthV2Response> {
-    try {
-        const requestData: AuthV2Request = {
-            auth: {
-                tenantName: projectName,
-                passwordCredentials: {
-                    username,
-                    password,
-                },
-            }
-        };
+    const logger = getLogger();
+    const requestData: AuthV2Request = {
+        auth: {
+            tenantName: projectName,
+            passwordCredentials: {
+                username,
+                password,
+            },
+        }
+    };
 
+    // 记录请求信息
+    logger.debug('HTTP Request:', {
+        url: authUrl,
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        data: requestData
+    });
+
+    try {
         const response = await axios.post<AuthV2Response>(authUrl, requestData, {
             headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        });
+
+        // 记录响应信息
+        logger.debug('HTTP Response:', {
+            url: authUrl,
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            data: response.data
         });
 
         const { metadata, serviceCatalog, token } = response.data.access;
@@ -93,6 +112,18 @@ export async function authV2(authUrl: string, username: string, password: string
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
             const data = error.response?.data as any;
+
+            // 记录错误响应信息
+            if (error.response) {
+                logger.error('HTTP Error Response:', {
+                    url: authUrl,
+                    status: error.response.status,
+                    statusText: error.response.statusText,
+                    headers: error.response.headers,
+                    data: error.response.data
+                });
+            }
+
             let detail = '认证失败';
             if (data && typeof data.message === 'string') {
                 detail = data.message;
@@ -160,34 +191,51 @@ async function authV3(
     domainName: string = 'Default',          // 用户域名称
     projectDomainName: string = 'Default'    // 项目域名称
 ): Promise<AuthV3Response> {
-    try {
-        const requestData: AuthV3Request = {
-            auth: {
-                identity: {
-                    methods: ['password'],
-                    password: {
-                        user: {
-                            name: username,
-                            domain: {
-                                name: domainName,
-                            },
-                            password: password,
-                        },
-                    },
-                },
-                scope: {
-                    project: {
-                        name: projectName,
+    const logger = getLogger();
+    const requestData: AuthV3Request = {
+        auth: {
+            identity: {
+                methods: ['password'],
+                password: {
+                    user: {
+                        name: username,
                         domain: {
-                            name: projectDomainName,
+                            name: domainName,
                         },
+                        password: password,
                     },
                 },
             },
-        };
+            scope: {
+                project: {
+                    name: projectName,
+                    domain: {
+                        name: projectDomainName,
+                    },
+                },
+            },
+        },
+    };
 
+    // 记录请求信息
+    logger.debug('HTTP Request:', {
+        url: authUrl,
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        data: requestData
+    });
+
+    try {
         const response = await axios.post<AuthV3Response>(authUrl, requestData, {
             headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        });
+
+        // 记录响应信息
+        logger.debug('HTTP Response:', {
+            url: authUrl,
+            status: response.status,
+            headers: response.headers,
+            data: response.data
         });
 
         const tokenData = response.data.token;
@@ -221,6 +269,17 @@ async function authV3(
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
             const data = error.response?.data as any;
+
+            // 记录错误响应信息
+            if (error.response) {
+                logger.error('HTTP Error Response:', {
+                    url: authUrl,
+                    status: error.response.status,
+                    headers: error.response.headers,
+                    data: error.response.data
+                });
+            }
+
             let detail = '认证失败';
             if (data && typeof data.message === 'string') {
                 detail = data.message;

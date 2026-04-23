@@ -4,18 +4,20 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
 
+// 导入其他模块
+import { getLogger } from '../log.js'
 import { authV2, getCurrentSession } from './keystone.js';
 
 // OpenStack API 响应的标准错误格式
 export interface OpenStackStandardError {
-  message?: string;
+    message?: string;
 }
 
 // Neutron API 特有的错误格式
 export interface NeutronApiError {
-  NeutronError?: {
-    message?: string;
-  };
+    NeutronError?: {
+        message?: string;
+    };
 }
 
 /**
@@ -23,6 +25,7 @@ export interface NeutronApiError {
  * @param config Axios 请求配置
  */
 export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
+    const logger = getLogger();
     const session = getCurrentSession(); // 检查认证
 
     // 预处理查询参数
@@ -38,10 +41,39 @@ export async function makeApiCall<T>(config: AxiosRequestConfig): Promise<T> {
         },
     };
 
+    // 记录请求信息
+    logger.debug('HTTP Request:', {
+        url: fullConfig.url,
+        method: fullConfig.method || 'GET',
+        headers: fullConfig.headers,
+        params: fullConfig.params,
+        data: fullConfig.data
+    });
+
     try {
         const response = await axios(fullConfig);
+        // 记录响应信息
+        logger.debug('HTTP Response:', {
+            url: fullConfig.url,
+            status: response.status,
+            headers: response.headers,
+            data: response.data
+        });
+
         return response.data;
     } catch (error) {
+        // 记录错误响应信息
+        if (axios.isAxiosError(error) && error.response) {
+            if (error.response) {
+                logger.debug('HTTP Error Response:', {
+                    url: fullConfig.url,
+                    status: error.response.status,
+                    headers: error.response.headers,
+                    data: error.response.data
+                });
+            }
+        }
+
         // 对401错误进行重新认证，并重试
         if (axios.isAxiosError(error) && error.response?.status === 401) {
             const s = getCurrentSession();
