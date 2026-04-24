@@ -20,40 +20,118 @@ export interface NeutronApiError {
     };
 }
 
-// 封装的HTTP请求函数，包含日志记录功能
+// 解析查询参数并添加到URL
+function getFullUrl(config: AxiosRequestConfig): string {
+    let fullUrl = config.url || '';
+    if (config.params) {
+        // 将params对象转换为查询字符串
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(config.params)) {
+            if (value !== null && value !== undefined) {
+                queryParams.append(key, String(value));
+            }
+        }
+        const queryString = queryParams.toString();
+        if (queryString) {
+            fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString;
+        }
+    }
+    return fullUrl;
+}
+
+// 格式化headers为 "name: value" 格式
+function formatHeaders(headers: any): string {
+    if (!headers) return '';
+
+    const headerEntries = Object.entries(headers);
+    if (headerEntries.length === 0) return '';
+
+    return headerEntries
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+}
+
+// 序列化请求/响应体
+function serializeData(data: any): string {
+    let serializedData = '';
+    if (data) {
+        try {
+            serializedData = JSON.stringify(data, null, 2); // 格式化JSON
+        } catch (error) {
+            serializedData = String(data); // 如果序列化失败，使用字符串形式
+        }
+    }
+    return serializedData;
+}
+
+/**
+ * 封装的HTTP请求函数，包含日志记录功能
+ * @param config Axios 请求配置
+ */
 export async function sendHttpRequest<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     const logger = getLogger();
-    
+
     // 记录请求信息
-    logger.debug('****** Sending HTTP Request ******', {
-        url: config.url,
-        method: config.method || 'GET',
-        headers: config.headers,
-        params: config.params,
-        data: config.data
-    });
+    if (config.data) {
+        logger.debug('****** Sending HTTP Request ******'
+            + '\n****** Method: %s'
+            + '\n****** URL: %s'
+            + '\n****** Headers:\n%s'
+            + '\n****** Body: %s',
+            getFullUrl(config),
+            config.method || 'GET',
+            formatHeaders(config.headers),
+            serializeData(config.data));
+    } else {
+        logger.debug('****** Sending HTTP Request ******'
+            + '\n****** Method: %s'
+            + '\n****** URL: %s'
+            + '\n****** Headers:\n%s',
+            getFullUrl(config),
+            config.method || 'GET',
+            formatHeaders(config.headers))
+    }
 
     try {
         const response = await axios(config);
-        
+
         // 记录响应信息
-        logger.debug('****** Received HTTP Response ******', {
-            url: config.url,
-            status: response.status,
-            headers: response.headers,
-            data: response.data
-        });
+        if (response.data) {
+            logger.debug('****** Received HTTP Response ******'
+                + '\n****** Status: %s'
+                + '\n****** Headers:\n%s'
+                + '\n****** Body: %s',
+                response.status,
+                formatHeaders(response.headers),
+                serializeData(response.data));
+        } else {
+            logger.debug('****** Received HTTP Response ******'
+                + '\n****** Status: %s'
+                + '\n****** Headers:\n%s',
+                response.status,
+                formatHeaders(response.headers));
+        }
+
 
         return response;
     } catch (error) {
         // 记录错误响应信息
         if (axios.isAxiosError(error) && error.response) {
-            logger.debug('****** Received HTTP Error Response ******', {
-                url: config.url,
-                status: error.response.status,
-                headers: error.response.headers,
-                data: error.response.data
-            });
+            if (error.response.data) {
+                logger.debug('****** Received HTTP Error Response ******'
+                    + '\n****** Status: %d'
+                    + '\n****** Headers:\n%s'
+                    + '\n****** Body: %s',
+                    error.response.status,
+                    formatHeaders(error.response.headers),
+                    serializeData(error.response.data));
+            } else {
+                logger.debug('****** Received HTTP Error Response ******'
+                    + '\n****** Status: %d'
+                    + '\n****** Headers:\n%s',
+                    error.response.status,
+                    formatHeaders(error.response.headers));
+            }
         }
 
         throw error; // 重新抛出错误供上层处理

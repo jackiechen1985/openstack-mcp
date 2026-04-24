@@ -21,6 +21,11 @@ export let rootLogger: winston.Logger | null = null;
 export function createLogger(level: LogLevel = LogLevel.DEBUG, filename?: string): winston.Logger {
     const transports: winston.transport[] = [];
 
+    // 自定义格式：时间戳 + 日志级别 + 服务名 + 消息
+    const customFormat = winston.format.printf(({ timestamp, level, message, service, stack }) => {
+        return `${timestamp} [${service}] ${level.toUpperCase()}: ${message}${stack ? `\n${stack}` : ''}`;
+    });
+
     if (filename) {
         const dir = path.dirname(filename);
         // 目录不存在，则创建
@@ -33,7 +38,7 @@ export function createLogger(level: LogLevel = LogLevel.DEBUG, filename?: string
                 winston.format.timestamp(),
                 winston.format.errors({ stack: true }),
                 winston.format.splat(),
-                winston.format.json()
+                customFormat
             )
         }))
     } else {
@@ -48,7 +53,7 @@ export function createLogger(level: LogLevel = LogLevel.DEBUG, filename?: string
             winston.format.timestamp(),
             winston.format.errors({ stack: true }),
             winston.format.splat(),
-            winston.format.json()
+            customFormat
         ),
         defaultMeta: { service: 'openstack-mcp' },
         transports: transports,
