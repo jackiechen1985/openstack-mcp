@@ -8,14 +8,17 @@ import { z } from 'zod';
 import glanceApi from '../api/glance.js'
 
 export function registerImageTools(server: McpServer) {
-    server.tool(
+    server.registerTool(
         'get_images',
-        '获取镜像列表, 会自动使用已登录的token',
         {
-            name: z
-                .string()
-                .optional()
-                .describe('镜像名称, 可选参数'),
+            title: 'get_images',
+            description: '获取镜像列表, 会自动使用已登录的token',
+            inputSchema: z.object({
+                name: z
+                    .string()
+                    .optional()
+                    .describe('镜像名称, 可选参数'),
+            }),
         },
         async ({
             name
@@ -42,13 +45,16 @@ export function registerImageTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'get_image',
-        '获取指定镜像ID的详情, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('镜像id，必填参数'),
+            title: 'get_image',
+            description: '获取指定镜像ID的详情, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('镜像id，必填参数'),
+            }),
         },
         async ({
             id,

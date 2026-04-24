@@ -8,25 +8,28 @@ import { z } from 'zod';
 import novaApi from '../api/nova.js'
 
 export function registerComputeTools(server: McpServer) {
-    server.tool(
+    server.registerTool(
         'create_server',
-        '创建虚机, 会自动使用已登录的token',
         {
-            name: z
-                .string()
-                .describe('虚机名称，必填参数'),
-            flavorId: z
-                .string()
-                .describe('规格id（描述虚机CPU,内存和磁盘等规格大小），必填参数'),
-            imageId: z
-                .string()
-                .describe('启动镜像id，必填参数'),
-            availabilityZone: z
-                .string()
-                .describe('可用区，必填参数'),
-            networks: z
-                .array(z.string())
-                .describe('多个网络的id（可通过get_networks工具根据名称查询id），必填参数'),
+            title: 'create_server',
+            description: '创建虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                name: z
+                    .string()
+                    .describe('虚机名称，必填参数'),
+                flavorId: z
+                    .string()
+                    .describe('规格id（描述虚机CPU,内存和磁盘等规格大小），必填参数'),
+                imageId: z
+                    .string()
+                    .describe('启动镜像id，必填参数'),
+                availabilityZone: z
+                    .string()
+                    .describe('可用区，必填参数'),
+                networks: z
+                    .array(z.string())
+                    .describe('多个网络的id（可通过get_networks工具根据名称查询id），必填参数'),
+            }),
         },
         async ({
             name,
@@ -45,7 +48,7 @@ export function registerComputeTools(server: McpServer) {
                     content: [
                         {
                             type: 'text',
-                            text: `创建虚机失败，错误原因：${error}`,
+                            text: `创建虚机失败，错误原因：${error instanceof Error ? error.message : String(error)}`,
                         },
                     ],
                 }
@@ -53,13 +56,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'delete_server',
-        '删除虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'delete_server',
+            description: '删除虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -82,14 +88,17 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'get_servers',
-        '获取虚机列表, 会自动使用已登录的token',
         {
-            name: z
-                .string()
-                .optional()
-                .describe('虚机名称, 可选参数'),
+            title: 'get_servers',
+            description: '获取虚机列表, 会自动使用已登录的token',
+            inputSchema: z.object({
+                name: z
+                    .string()
+                    .optional()
+                    .describe('虚机名称, 可选参数'),
+            }),
         },
         async ({
             name
@@ -116,13 +125,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'get_server',
-        '获取指定虚机ID的详情, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'get_server',
+            description: '获取指定虚机ID的详情, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -145,13 +157,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'start_server',
-        '启动虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'start_server',
+            description: '启动虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -174,13 +189,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'stop_server',
-        '停止虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'stop_server',
+            description: '停止虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -203,13 +221,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'soft_reboot_server',
-        '软重启虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'soft_reboot_server',
+            description: '软重启虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -232,13 +253,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'hard_reboot_server',
-        '硬重启虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'hard_reboot_server',
+            description: '硬重启虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -261,13 +285,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'pause_server',
-        '暂停虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'pause_server',
+            description: '暂停虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -290,13 +317,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'unpause_server',
-        '取消暂停虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'unpause_server',
+            description: '取消暂停虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -319,13 +349,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'suspend_server',
-        '挂起虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'suspend_server',
+            description: '挂起虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -348,13 +381,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'resume_server',
-        '取消挂起虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'resume_server',
+            description: '取消挂起虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -377,13 +413,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'lock_server',
-        '锁定虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'lock_server',
+            description: '锁定虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -406,13 +445,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'unlock_server',
-        '解除锁定虚机, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机id，必填参数'),
+            title: 'unlock_server',
+            description: '解除锁定虚机, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -435,22 +477,25 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'create_flavor',
-        '创建虚机规格, 会自动使用已登录的token',
         {
-            name: z
-                .string()
-                .describe('虚机名称，必填参数'),
-            vcpus: z
-                .number()
-                .describe('虚拟CPU的个数，必填参数'),
-            ram: z
-                .number()
-                .describe('内存的大小（MB），必填参数'),
-            disk: z
-                .number()
-                .describe('磁盘的大小（GB），必填参数'),
+            title: 'create_flavor',
+            description: '创建虚机规格, 会自动使用已登录的token',
+            inputSchema: z.object({
+                name: z
+                    .string()
+                    .describe('虚机名称，必填参数'),
+                vcpus: z
+                    .number()
+                    .describe('虚拟CPU的个数，必填参数'),
+                ram: z
+                    .number()
+                    .describe('内存的大小（MB），必填参数'),
+                disk: z
+                    .number()
+                    .describe('磁盘的大小（GB），必填参数'),
+            }),
         },
         async ({
             name,
@@ -461,7 +506,7 @@ export function registerComputeTools(server: McpServer) {
             try {
                 const flavor = await novaApi.createFlavor(name, vcpus, ram, disk);
                 return {
-                    content: [{ type: 'text', text: `创建虚机规格成功，返回创建的虚机规格：${JSON.stringify(server)}` }]
+                    content: [{ type: 'text', text: `创建虚机规格成功，返回创建的虚机规格：${JSON.stringify(flavor)}` }] // 修正：flavor 替换 server
                 }
             } catch (error) {
                 return {
@@ -476,13 +521,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'delete_flavor',
-        '删除虚机规格, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机规格id，必填参数'),
+            title: 'delete_flavor',
+            description: '删除虚机规格, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机规格id，必填参数'),
+            }),
         },
         async ({
             id,
@@ -505,14 +553,17 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'get_flavors',
-        '获取虚机规格列表, 会自动使用已登录的token',
         {
-            name: z
-                .string()
-                .optional()
-                .describe('虚机规格名称, 可选参数'),
+            title: 'get_flavors',
+            description: '获取虚机规格列表, 会自动使用已登录的token',
+            inputSchema: z.object({
+                name: z
+                    .string()
+                    .optional()
+                    .describe('虚机规格名称, 可选参数'),
+            }),
         },
         async ({
             name
@@ -539,13 +590,16 @@ export function registerComputeTools(server: McpServer) {
         }
     );
 
-    server.tool(
+    server.registerTool(
         'get_flavor',
-        '获取指定虚机规格ID的详情, 会自动使用已登录的token',
         {
-            id: z
-                .string()
-                .describe('虚机规格id，必填参数'),
+            title: 'get_flavor',
+            description: '获取指定虚机规格ID的详情, 会自动使用已登录的token',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe('虚机规格id，必填参数'),
+            }),
         },
         async ({
             id,
