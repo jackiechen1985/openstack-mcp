@@ -12,6 +12,7 @@ async function createServer(name: string, flavorId: string, imageId: string, ava
     return makeApiCall<{ server: Server }>({
         method: 'POST',
         url: `${session.novaUrl}/servers`,
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         data: {
             server: {
                 name,
@@ -20,8 +21,7 @@ async function createServer(name: string, flavorId: string, imageId: string, ava
                 availability_zone: availabilityZone,
                 networks: networks.map(uuid => ({ uuid })),
             },
-        },
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        }
     });
 }
 
@@ -70,8 +70,8 @@ async function updateServer(id: string, name?: string, description?: string) {
     return makeApiCall<{ server: Server }>({
         method: 'PUT',
         url: `${session.novaUrl}/servers/${id}`,
-        data: serverData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: serverData
     });
 }
 
@@ -83,8 +83,8 @@ async function startServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'os-start': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'os-start': null }
     });
 }
 
@@ -96,8 +96,8 @@ async function stopServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'os-stop': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'os-stop': null }
     });
 }
 
@@ -109,8 +109,8 @@ async function softRebootServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'reboot': { 'type': 'SOFT' } },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'reboot': { 'type': 'SOFT' } }
     });
 }
 
@@ -122,8 +122,8 @@ async function hardRebootServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'reboot': { 'type': 'HARD' } },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'reboot': { 'type': 'HARD' } }
     });
 }
 
@@ -135,8 +135,8 @@ async function pauseServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'pause': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'pause': null }
     });
 }
 
@@ -148,8 +148,8 @@ async function unpauseServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'unpause': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'unpause': null }
     });
 }
 
@@ -161,8 +161,8 @@ async function suspendServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'suspend': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'suspend': null }
     });
 }
 
@@ -174,8 +174,8 @@ async function resumeServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'resume': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'resume': null }
     });
 }
 
@@ -187,8 +187,8 @@ async function lockServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'lock': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'lock': null }
     });
 }
 
@@ -200,8 +200,8 @@ async function unlockServer(id: string) {
     makeApiCall({
         method: 'POST',
         url: `${session.novaUrl}/servers/${id}/action`,
-        data: { 'unlock': null },
         headers: { 'Content-Type': 'application/json' },
+        data: { 'unlock': null }
     });
 }
 
@@ -222,8 +222,8 @@ async function createFlavor(name: string, vcpus: number, ram: number, disk: numb
     return makeApiCall<{ flavor: Flavor }>({
         method: 'POST',
         url: `${session.novaUrl}/flavors`,
-        data: flavorData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: flavorData
     });
 }
 

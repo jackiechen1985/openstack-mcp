@@ -2,6 +2,7 @@
  * 认证相关逻辑
  */
 import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
 
 // 导入其他模块
 import { getLogger } from '../log.js';
@@ -10,6 +11,7 @@ import type {
     AuthV2Request, AuthV2Response,
     AuthV3Request, AuthV3Response
 } from './keystonetypes.js'
+import { sendHttpRequest } from './common.js';
 
 // 全局会话变量
 let currentSession: Session | null = null;
@@ -64,27 +66,15 @@ export async function authV2(authUrl: string, username: string, password: string
             },
         }
     };
-
-    // 记录请求信息
-    logger.debug('****** Sending HTTP Request ******', {
-        url: authUrl,
+    const fullConfig: AxiosRequestConfig = {
         method: 'POST',
+        url: authUrl,
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         data: requestData
-    });
-
+    };
     try {
-        const response = await axios.post<AuthV2Response>(authUrl, requestData, {
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        });
 
-        // 记录响应信息
-        logger.debug('****** Received HTTP Response ******', {
-            url: authUrl,
-            status: response.status,
-            headers: response.headers,
-            data: response.data
-        });
+        const response = await sendHttpRequest<AuthV2Response>(fullConfig);
 
         const { metadata, serviceCatalog, token } = response.data.access;
         const neutronUrl = getServiceUrlV2(serviceCatalog, 'network', regionName);
@@ -111,17 +101,6 @@ export async function authV2(authUrl: string, username: string, password: string
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
             const data = error.response?.data as any;
-
-            // 记录错误响应信息
-            if (error.response) {
-                logger.error('****** Received HTTP Error Response ******', {
-                    url: authUrl,
-                    status: error.response.status,
-                    headers: error.response.headers,
-                    data: error.response.data
-                });
-            }
-
             let detail = '认证失败';
             if (data && typeof data.message === 'string') {
                 detail = data.message;
@@ -214,27 +193,15 @@ async function authV3(
             },
         },
     };
-
-    // 记录请求信息
-    logger.debug('HTTP Request:', {
-        url: authUrl,
+    const fullConfig: AxiosRequestConfig = {
         method: 'POST',
+        url: authUrl,
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         data: requestData
-    });
+    };
 
     try {
-        const response = await axios.post<AuthV3Response>(authUrl, requestData, {
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        });
-
-        // 记录响应信息
-        logger.debug('HTTP Response:', {
-            url: authUrl,
-            status: response.status,
-            headers: response.headers,
-            data: response.data
-        });
+        const response = await sendHttpRequest<AuthV3Response>(fullConfig);
 
         const tokenData = response.data.token;
         const catalog = tokenData.catalog;
@@ -267,17 +234,6 @@ async function authV3(
         if (axios.isAxiosError(error)) {
             const status = error.response?.status;
             const data = error.response?.data as any;
-
-            // 记录错误响应信息
-            if (error.response) {
-                logger.error('HTTP Error Response:', {
-                    url: authUrl,
-                    status: error.response.status,
-                    headers: error.response.headers,
-                    data: error.response.data
-                });
-            }
-
             let detail = '认证失败';
             if (data && typeof data.message === 'string') {
                 detail = data.message;

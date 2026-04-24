@@ -2,7 +2,7 @@
  * OpenStack API 调用封装
  */
 import axios from 'axios';
-import type { AxiosRequestConfig } from 'axios'; // 使用 type-only import
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'; // 使用 type-only import
 
 // 导入其他模块
 import { getLogger } from '../log.js'
@@ -18,6 +18,46 @@ export interface NeutronApiError {
     NeutronError?: {
         message?: string;
     };
+}
+
+// 封装的HTTP请求函数，包含日志记录功能
+export async function sendHttpRequest<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    const logger = getLogger();
+    
+    // 记录请求信息
+    logger.debug('****** Sending HTTP Request ******', {
+        url: config.url,
+        method: config.method || 'GET',
+        headers: config.headers,
+        params: config.params,
+        data: config.data
+    });
+
+    try {
+        const response = await axios(config);
+        
+        // 记录响应信息
+        logger.debug('****** Received HTTP Response ******', {
+            url: config.url,
+            status: response.status,
+            headers: response.headers,
+            data: response.data
+        });
+
+        return response;
+    } catch (error) {
+        // 记录错误响应信息
+        if (axios.isAxiosError(error) && error.response) {
+            logger.debug('****** Received HTTP Error Response ******', {
+                url: config.url,
+                status: error.response.status,
+                headers: error.response.headers,
+                data: error.response.data
+            });
+        }
+
+        throw error; // 重新抛出错误供上层处理
+    }
 }
 
 /**
@@ -42,37 +82,10 @@ export async function makeApiCall<T>(config: AxiosRequestConfig, maxRetries: num
         },
     };
 
-    // 记录请求信息
-    logger.debug('****** Sending HTTP Request ******', {
-        url: fullConfig.url,
-        method: fullConfig.method || 'GET',
-        headers: fullConfig.headers,
-        params: fullConfig.params,
-        data: fullConfig.data
-    });
-
     try {
-        const response = await axios(fullConfig);
-        // 记录响应信息
-        logger.debug('****** Received HTTP Response ******', {
-            url: fullConfig.url,
-            status: response.status,
-            headers: response.headers,
-            data: response.data
-        });
-
+        const response = await sendHttpRequest<T>(fullConfig);
         return response.data;
     } catch (error) {
-        // 记录错误响应信息
-        if (axios.isAxiosError(error) && error.response) {
-            logger.debug('****** Received HTTP Error Response ******', {
-                url: fullConfig.url,
-                status: error.response.status,
-                headers: error.response.headers,
-                data: error.response.data
-            });
-        }
-
         // 对401错误进行重新认证，并最多重试一次
         if (axios.isAxiosError(error) && error.response?.status === 401) {
             if (maxRetries > 0) {

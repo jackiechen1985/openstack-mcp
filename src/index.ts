@@ -45,7 +45,7 @@ async function init(options: any) {
             // Keystone认证
             await authV2(c.authUrl, c.username, c.password, c.projectName, c.regionName);
         } catch(error) {
-            getLogger().error('Failed to load config file:', error);
+            getLogger().error('Failed to init config:', error);
             process.exit(1);
         }
     }

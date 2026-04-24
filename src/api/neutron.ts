@@ -27,8 +27,8 @@ async function createNetwork(name: string, availabilityZone: string) {
     return makeApiCall<{ network: Network }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/networks`,
-        data: { network: { name, availability_zone_hints: [availabilityZone] } },
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: { network: { name, availability_zone_hints: [availabilityZone] } }
     });
 }
 
@@ -87,8 +87,8 @@ async function createSubnet(name: string, networkId: string, cidr: string, ipVer
     return makeApiCall<{ subnet: Subnet }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/subnets`,
-        data: subnetData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: subnetData
     });
 }
 
@@ -150,8 +150,8 @@ async function createPort(name: string, networkId: string, adminStateUp?: boolea
     return makeApiCall<{ port: Port }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/ports`,
-        data: portData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: portData
     });
 }
 
@@ -192,8 +192,8 @@ async function createRouter(name: string) {
     return makeApiCall<{ router: Router }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/routers`,
-        data: { router: { name } },
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: { router: { name } }
     });
 }
 
@@ -233,8 +233,8 @@ async function addRouterInterface(routerId: string, subnetId: string) {
     return makeApiCall({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/routers/${routerId}/add_router_interface`,
-        data: { subnet_id: subnetId },
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: { subnet_id: subnetId }
     });
 }
 
@@ -243,8 +243,8 @@ async function removeRouterInterface(routerId: string, subnetId: string) {
     return makeApiCall({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/routers/${routerId}/remove_router_interface`,
-        data: { subnet_id: subnetId },
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: { subnet_id: subnetId }
     });
 }
 
@@ -257,8 +257,8 @@ async function createSecurityGroup(name: string, stateful?: boolean) {
     return makeApiCall<{ security_group: SecurityGroup }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/security-groups`,
-        data: sgData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: sgData
     });
 }
 
@@ -322,8 +322,8 @@ async function createSecurityGroupRule(securityGroupId: string, direction: strin
     return makeApiCall<{ security_group_rule: SecurityGroupRule }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/security-group-rules`,
-        data: sgRuleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: sgRuleData
     });
 }
 
@@ -369,8 +369,8 @@ async function createQoSPolicy(name: string, description?: string, shared?: bool
     return makeApiCall<{ policy: QoSPolicy }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/qos/policies`,
-        data: policyData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: policyData
     });
 }
 
@@ -421,8 +421,8 @@ async function updateQoSPolicy(id: string, name?: string, description?: string, 
     return makeApiCall<{ policy: QoSPolicy }>({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/qos/policies/${id}`,
-        data: policyData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: policyData
     });
 }
 
@@ -441,8 +441,8 @@ async function createQoSBandwidthLimitRule(policyId: string, maxKbps?: number, m
     return makeApiCall<{ bandwidth_limit_rule: QoSBandwidthLimitRule }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/bandwidth_limit_rules`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
@@ -503,8 +503,8 @@ async function updateQoSBandwidthLimitRule(policyId: string, ruleId: string, max
     return makeApiCall<{ bandwidth_limit_rule: QoSBandwidthLimitRule }>({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/bandwidth_limit_rules/${ruleId}`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
@@ -521,8 +521,8 @@ async function createQoSDscpMarkingRule(policyId: string, dscpMark: number) {
     return makeApiCall<{ dscp_marking_rule: QoSDscpMarkingRule }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/dscp_marking_rules`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
@@ -578,8 +578,8 @@ async function updateQoSDscpMarkingRule(policyId: string, ruleId: string, dscpMa
     return makeApiCall<{ dscp_marking_rule: QoSDscpMarkingRule }>({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/dscp_marking_rules/${ruleId}`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
@@ -599,8 +599,8 @@ async function createQoSMinimumBandwidthRule(policyId: string, minKbps: number, 
     return makeApiCall<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }>({
         method: 'POST',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/minimum_bandwidth_rules`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
@@ -656,8 +656,8 @@ async function updateQoSMinimumBandwidthRule(policyId: string, ruleId: string, m
     return makeApiCall<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }>({
         method: 'PUT',
         url: `${session.neutronUrl}/v2.0/qos/policies/${policyId}/minimum_bandwidth_rules/${ruleId}`,
-        data: ruleData,
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        data: ruleData
     });
 }
 
