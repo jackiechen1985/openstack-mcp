@@ -50,7 +50,7 @@ export interface Network {
     revision_number: number;
 
     /** 是否为外部网络 (OpenStack 扩展字段) */
-    'router:external': boolean;
+    "router:external": boolean;
 
     /** 子网 ID 列表 */
     subnets: string[];
@@ -70,13 +70,13 @@ export interface Network {
     // --- OpenStack Provider 扩展字段 ---
 
     /** 网络类型 (例如: vxlan, gre, vlan, flat) */
-    'provider:network_type'?: string;
+    "provider:network_type"?: string;
 
     /** 物理网络名称 (可能为空) */
-    'provider:physical_network'?: string | null;
+    "provider:physical_network"?: string | null;
 
     /** 分段 ID (VLAN ID 或 VNI) */
-    'provider:segmentation_id'?: number;
+    "provider:segmentation_id"?: number;
 }
 
 export interface Subnet {
@@ -157,13 +157,13 @@ export interface Subnet {
 export interface AllowedAddressPair {
     ip_address?: string;
     mac_address?: string;
-};
+}
 
 export interface ExtraDhcpOpts {
     opt_name: string;
     opt_value: string;
     ip_version: number;
-};
+}
 
 export interface FixedIps {
     /** IP 地址 */
@@ -180,19 +180,19 @@ export interface Port {
     allowed_address_pairs: AllowedAddressPair[];
 
     /** 绑定配置文件 (扩展属性) */
-    'binding:profile': Record<string, any>; // 通常是一个键值对对象
+    "binding:profile": Record<string, any>; // 通常是一个键值对对象
 
     /** 绑定:VIF 类型 (例如: ovs, vhostuser, etc.) */
-    'binding:vnic_type': string;
+    "binding:vnic_type": string;
 
     /** 绑定:主机 ID */
-    'binding:host_id'?: string;
+    "binding:host_id"?: string;
 
     /** 绑定:VIF 类型 (例如: ovs, vhostuser, etc.) */
-    'binding:vif_type'?: string;
+    "binding:vif_type"?: string;
 
     /** 绑定:VIF 详情 */
-    'binding:vif_details'?: Record<string, any>;
+    "binding:vif_details"?: Record<string, any>;
 
     /** 创建时间 (ISO 8601 格式) */
     created_at: string;
@@ -387,10 +387,10 @@ export interface SecurityGroupRule {
     description: string;
 
     /** 方向 ("ingress" 或 "egress") */
-    direction: 'ingress' | 'egress';
+    direction: "ingress" | "egress";
 
     /** 以太网类型 ("IPv4" 或 "IPv6") */
-    ethertype: 'IPv4' | 'IPv6';
+    ethertype: "IPv4" | "IPv6";
 
     /** 规则唯一标识符 */
     id: string;
@@ -494,3 +494,141 @@ export interface QoSMinimumBandwidthRule {
 
 // 使用联合类型支持多种规则
 export type QoSRule = QoSBandwidthLimitRule | QoSDscpMarkingRule | QoSMinimumBandwidthRule;
+
+export interface INeutronApi {
+    createNetwork(name: string, availabilityZone: string): Promise<{ network: Network }>;
+    deleteNetwork(id: string): Promise<void>;
+    getNetworks(params?: any): Promise<{ networks: Network[] }>;
+    getNetwork(id: string): Promise<{ network: Network }>;
+
+    createSubnet(
+        name: string,
+        networkId: string,
+        cidr: string,
+        ipVersion: number,
+        gatewayIp?: string,
+        enableDhcp?: boolean,
+        dnsNameservers?: string[],
+        hostRoutes?: string[],
+    ): Promise<{ subnet: Subnet }>;
+    deleteSubnet(id: string): Promise<void>;
+    getSubnets(params?: any): Promise<{ subnets: Subnet[] }>;
+    getSubnet(id: string): Promise<{ subnet: Subnet }>;
+
+    createPort(
+        name: string,
+        networkId: string,
+        adminStateUp?: boolean,
+        allowedAddressPairs?: AllowedAddressPair[],
+        fixedIps?: FixedIps[],
+        macAddress?: string,
+        portSecurityEnabled?: boolean,
+        securityGroups?: string[],
+        qosPolicyId?: string,
+    ): Promise<{ port: Port }>;
+    deletePort(id: string): Promise<void>;
+    getPorts(params?: any): Promise<{ ports: Port[] }>;
+    getPort(id: string): Promise<{ port: Port }>;
+
+    // --- 路由与安全 ---
+    createRouter(name: string): Promise<{ router: Router }>;
+    deleteRouter(id: string): Promise<void>;
+    getRouters(params?: any): Promise<{ routers: Router[] }>;
+    getRouter(id: string): Promise<{ router: Router }>;
+    addRouterInterface(routerId: string, subnetId: string): Promise<any>;
+    removeRouterInterface(routerId: string, subnetId: string): Promise<any>;
+
+    createSecurityGroup(name: string, stateful?: boolean): Promise<{ security_group: SecurityGroup }>;
+    deleteSecurityGroup(id: string): Promise<void>;
+    getSecurityGroups(params?: any): Promise<{ security_groups: SecurityGroup[] }>;
+    getSecurityGroup(id: string): Promise<{ security_group: SecurityGroup }>;
+
+    createSecurityGroupRule(
+        securityGroupId: string,
+        direction: string,
+        ethertype?: string,
+        protocol?: string,
+        remoteIpPrefix?: string,
+        remoteGroupId?: string,
+        portRangeMin?: number,
+        portRangeMax?: number,
+    ): Promise<{ security_group_rule: SecurityGroupRule }>;
+    deleteSecurityGroupRule(id: string): Promise<void>;
+    getSecurityGroupRules(params?: any): Promise<{ security_group_rules: SecurityGroupRule[] }>;
+    getSecurityGroupRule(id: string): Promise<{ security_group_rule: SecurityGroupRule }>;
+
+    // Policy
+    createQoSPolicy(
+        name: string,
+        description?: string,
+        shared?: boolean,
+        isDefault?: boolean,
+    ): Promise<{ policy: QoSPolicy }>;
+    deleteQoSPolicy(id: string): Promise<void>;
+    getQoSPolicies(params?: any): Promise<{ policies: QoSPolicy[] }>;
+    getQoSPolicy(id: string): Promise<{ policy: QoSPolicy }>;
+    updateQoSPolicy(
+        id: string,
+        name?: string,
+        description?: string,
+        shared?: boolean,
+        isDefault?: boolean,
+    ): Promise<{ policy: QoSPolicy }>;
+
+    // Bandwidth Limit Rule
+    createQoSBandwidthLimitRule(
+        policyId: string,
+        maxKbps?: number,
+        maxBurstKbps?: number,
+        direction?: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }>;
+    deleteQoSBandwidthLimitRule(policyId: string, ruleId: string): Promise<void>;
+    getQoSBandwidthLimitRules(
+        policyId: string,
+        params?: any,
+    ): Promise<{ bandwidth_limit_rules: QoSBandwidthLimitRule[] }>;
+    getQoSBandwidthLimitRule(
+        policyId: string,
+        ruleId: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }>;
+    updateQoSBandwidthLimitRule(
+        policyId: string,
+        ruleId: string,
+        maxKbps?: number,
+        maxBurstKbps?: number,
+        direction?: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }>;
+
+    // DSCP Marking Rule
+    createQoSDscpMarkingRule(policyId: string, dscpMark: number): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }>;
+    deleteQoSDscpMarkingRule(policyId: string, ruleId: string): Promise<void>;
+    getQoSDscpMarkingRules(policyId: string, params?: any): Promise<{ dscp_marking_rules: QoSDscpMarkingRule[] }>;
+    getQoSDscpMarkingRule(policyId: string, ruleId: string): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }>;
+    updateQoSDscpMarkingRule(
+        policyId: string,
+        ruleId: string,
+        dscpMark?: number,
+    ): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }>;
+
+    // Minimum Bandwidth Rule
+    createQoSMinimumBandwidthRule(
+        policyId: string,
+        minKbps: number,
+        direction?: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }>;
+    deleteQoSMinimumBandwidthRule(policyId: string, ruleId: string): Promise<void>;
+    getQoSMinimumBandwidthRules(
+        policyId: string,
+        params?: any,
+    ): Promise<{ minimum_bandwidth_rules: QoSMinimumBandwidthRule[] }>;
+    getQoSMinimumBandwidthRule(
+        policyId: string,
+        ruleId: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }>;
+    updateQoSMinimumBandwidthRule(
+        policyId: string,
+        ruleId: string,
+        minKbps: number,
+        direction?: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }>;
+}

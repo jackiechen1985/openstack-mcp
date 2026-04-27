@@ -6,7 +6,8 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios'; // 使用 type-o
 
 // 导入其他模块
 import { getLogger } from '../log.js'
-import { authV2, getCurrentSession } from './keystone.js';
+import { getCurrentSession } from './keystone.js';
+import keystoneApi from './keystone.js'
 
 // OpenStack API 响应的标准错误格式
 export interface OpenStackStandardError {
@@ -169,7 +170,7 @@ export async function makeApiCall<T>(config: AxiosRequestConfig, maxRetries: num
             if (maxRetries > 0) {
                 logger.info('Token expired, re-authenticating...')
                 const s = getCurrentSession();
-                await authV2(s.authUrl, s.username, s.password, s.projectName, s.regionName);
+                await keystoneApi.authV2(s.authUrl, s.username, s.password, s.projectName, s.regionName);
                 return makeApiCall<T>(config, maxRetries - 1);
             } else {
                 logger.error('Re-authentication failed after retry');

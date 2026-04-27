@@ -4,278 +4,262 @@
 import { getCurrentSession } from './keystone.js';
 import { makeApiCall } from './common.js';
 import { isValidUUIDv4 } from '../utils.js';
-import type { Server, Flavor } from './novatypes.js'
+import type { Server, Flavor, INovaApi } from './novatypes.js'
 
-// --- 虚拟机相关 API ---
-async function createServer(name: string, flavorId: string, imageId: string, availabilityZone: string, networks: string[]) {
-    const session = getCurrentSession();
-    return makeApiCall<{ server: Server }>({
-        method: 'POST',
-        url: `${session.novaUrl}/servers`,
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        data: {
-            server: {
+export class NovaApi implements INovaApi {
+
+    // --- 虚拟机相关 API ---
+    async createServer(name: string, flavorId: string, imageId: string, availabilityZone: string, networks: string[]) {
+        const session = getCurrentSession();
+        return makeApiCall<{ server: Server }>({
+            method: 'POST',
+            url: `${session.novaUrl}/servers`,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            data: {
+                server: {
+                    name,
+                    flavorRef: flavorId,
+                    imageRef: imageId,
+                    availability_zone: availabilityZone,
+                    networks: networks.map(uuid => ({ uuid })),
+                },
+            }
+        });
+    }
+
+    async deleteServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'DELETE',
+            url: `${session.novaUrl}/servers/${id}`,
+        });
+    }
+
+    async getServers(params?: any) {
+        const session = getCurrentSession();
+        return makeApiCall<{ servers: Server[] }>({
+            method: 'GET',
+            url: `${session.novaUrl}/servers/detail`,
+            params: params
+        });
+    }
+
+    async getServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        return makeApiCall<{ server: Server }>({
+            method: 'GET',
+            url: `${session.novaUrl}/servers/${id}`,
+        });
+    }
+
+    async updateServer(id: string, name?: string, description?: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+
+        const session = getCurrentSession();
+        const serverData: any = { server: {} };
+
+        if (name !== undefined) serverData.server.name = name;
+        if (description !== undefined) serverData.server.description = description;
+
+        return makeApiCall<{ server: Server }>({
+            method: 'PUT',
+            url: `${session.novaUrl}/servers/${id}`,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            data: serverData
+        });
+    }
+
+    async startServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'os-start': null }
+        });
+    }
+
+    async stopServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'os-stop': null }
+        });
+    }
+
+    async softRebootServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'reboot': { 'type': 'SOFT' } }
+        });
+    }
+
+    async hardRebootServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'reboot': { 'type': 'HARD' } }
+        });
+    }
+
+    async pauseServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'pause': null }
+        });
+    }
+
+    async unpauseServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'unpause': null }
+        });
+    }
+
+    async suspendServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'suspend': null }
+        });
+    }
+
+    async resumeServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'resume': null }
+        });
+    }
+
+    async lockServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'lock': null }
+        });
+    }
+
+    async unlockServer(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        }
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'POST',
+            url: `${session.novaUrl}/servers/${id}/action`,
+            headers: { 'Content-Type': 'application/json' },
+            data: { 'unlock': null }
+        });
+    }
+
+    // --- 虚拟机规格相关 API ---
+    async createFlavor(name: string, vcpus: number, ram: number, disk: number, id?: string, description?: string) {
+        const session = getCurrentSession();
+        const flavorData: any = {
+            flavor: {
                 name,
-                flavorRef: flavorId,
-                imageRef: imageId,
-                availability_zone: availabilityZone,
-                networks: networks.map(uuid => ({ uuid })),
-            },
+                vcpus,
+                ram,
+                disk,
+            }
+        };
+        if (id !== undefined) flavorData.flavor.id = id;
+        if (description !== undefined) flavorData.flavor.description = description;
+
+        return makeApiCall<{ flavor: Flavor }>({
+            method: 'POST',
+            url: `${session.novaUrl}/flavors`,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            data: flavorData
+        });
+    }
+
+    async deleteFlavor(id: string) {
+        if (!isValidUUIDv4(id)) {
+            throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
-    });
-}
-
-async function deleteServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'DELETE',
-        url: `${session.novaUrl}/servers/${id}`,
-    });
-}
-
-async function getServers(params?: any) {
-    const session = getCurrentSession();
-    return makeApiCall<{ servers: Server[] }>({
-        method: 'GET',
-        url: `${session.novaUrl}/servers/detail`,
-        params: params
-    });
-}
-
-async function getServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    return makeApiCall<{ server: Server }>({
-        method: 'GET',
-        url: `${session.novaUrl}/servers/${id}`,
-    });
-}
-
-async function updateServer(id: string, name?: string, description?: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+        const session = getCurrentSession();
+        makeApiCall({
+            method: 'DELETE',
+            url: `${session.novaUrl}/flavors/${id}`,
+        });
     }
 
-    const session = getCurrentSession();
-    const serverData: any = { server: {} };
-
-    if (name !== undefined) serverData.server.name = name;
-    if (description !== undefined) serverData.server.description = description;
-
-    return makeApiCall<{ server: Server }>({
-        method: 'PUT',
-        url: `${session.novaUrl}/servers/${id}`,
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        data: serverData
-    });
-}
-
-async function startServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+    async getFlavors(params?: any) {
+        const session = getCurrentSession();
+        return makeApiCall<{ flavors: Flavor[] }>({
+            method: 'GET',
+            url: `${session.novaUrl}/flavors`,
+            params: params
+        });
     }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'os-start': null }
-    });
-}
 
-async function stopServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
+    async getFlavor(id: string) {
+        const session = getCurrentSession();
+        return makeApiCall<{ flavor: Flavor }>({
+            method: 'GET',
+            url: `${session.novaUrl}/flavors/${id}`,
+        });
     }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'os-stop': null }
-    });
 }
 
-async function softRebootServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'reboot': { 'type': 'SOFT' } }
-    });
-}
 
-async function hardRebootServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'reboot': { 'type': 'HARD' } }
-    });
-}
+// 导出类的实例
+const novaApi = new NovaApi();
 
-async function pauseServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'pause': null }
-    });
-}
-
-async function unpauseServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'unpause': null }
-    });
-}
-
-async function suspendServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'suspend': null }
-    });
-}
-
-async function resumeServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'resume': null }
-    });
-}
-
-async function lockServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'lock': null }
-    });
-}
-
-async function unlockServer(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'POST',
-        url: `${session.novaUrl}/servers/${id}/action`,
-        headers: { 'Content-Type': 'application/json' },
-        data: { 'unlock': null }
-    });
-}
-
-// --- 虚拟机规格相关 API ---
-async function createFlavor(name: string, vcpus: number, ram: number, disk: number, id?: string, description?: string) {
-    const session = getCurrentSession();
-    const flavorData: any = {
-        flavor: {
-            name,
-            vcpus,
-            ram,
-            disk,
-        }
-    };
-    if (id !== undefined) flavorData.flavor.id = id;
-    if (description !== undefined) flavorData.flavor.description = description;
-
-    return makeApiCall<{ flavor: Flavor }>({
-        method: 'POST',
-        url: `${session.novaUrl}/flavors`,
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        data: flavorData
-    });
-}
-
-async function deleteFlavor(id: string) {
-    if (!isValidUUIDv4(id)) {
-        throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
-    }
-    const session = getCurrentSession();
-    makeApiCall({
-        method: 'DELETE',
-        url: `${session.novaUrl}/flavors/${id}`,
-    });
-}
-
-async function getFlavors(params?: any) {
-    const session = getCurrentSession();
-    return makeApiCall<{ flavors: Flavor[] }>({
-        method: 'GET',
-        url: `${session.novaUrl}/flavors`,
-        params: params
-    });
-}
-
-async function getFlavor(id: string) {
-    const session = getCurrentSession();
-    return makeApiCall<{ flavor: Flavor }>({
-        method: 'GET',
-        url: `${session.novaUrl}/flavors/${id}`,
-    });
-}
-
-// 将所有函数聚合到一个对象中
-const novaApi = {
-    createServer,
-    deleteServer,
-    getServers,
-    getServer,
-    updateServer,
-    startServer,
-    stopServer,
-    softRebootServer,
-    hardRebootServer,
-    pauseServer,
-    unpauseServer,
-    suspendServer,
-    resumeServer,
-    lockServer,
-    unlockServer,
-    createFlavor,
-    deleteFlavor,
-    getFlavors,
-    getFlavor
-};
-
-export default novaApi; // 导出整个对象
+export default novaApi;

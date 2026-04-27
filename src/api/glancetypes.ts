@@ -60,3 +60,9 @@ export interface Image {
     /** Schema URL */
     schema: string;
 }
+
+// --- 定义接口 ---
+export interface IGlanceApi {
+    getImages(params?: any): Promise<{ images: Image[] }>;
+    getImage(id: string): Promise<{ image: Image }>;
+}

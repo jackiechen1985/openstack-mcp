@@ -116,3 +116,11 @@ export interface AuthV3Response {
         }>;
     };
 }
+
+// --- 定义接口 ---
+export interface IKeystoneApi {
+    authV2(authUrl: string, username: string, password: string, projectName: string,
+        regionName: string): Promise<AuthV2Response>;
+    authV3(authUrl: string, username: string, password: string, projectName: string,
+        regionName: string, domainName: string, projectDomainName: string): Promise<AuthV3Response>;
+}

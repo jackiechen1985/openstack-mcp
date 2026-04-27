@@ -220,3 +220,44 @@ export interface Flavor {
     /** 额外规格参数 */
     extra_specs: Record<string, any>;
 }
+
+// --- 定义接口 ---
+export interface INovaApi {
+    // --- 虚拟机相关 ---
+    createServer(
+        name: string,
+        flavorId: string,
+        imageId: string,
+        availabilityZone: string,
+        networks: string[],
+    ): Promise<{ server: Server }>;
+    deleteServer(id: string): Promise<void>;
+    getServers(params?: any): Promise<{ servers: Server[] }>;
+    getServer(id: string): Promise<{ server: Server }>;
+    updateServer(id: string, name?: string, description?: string): Promise<{ server: Server }>;
+
+    // 电源与状态管理
+    startServer(id: string): Promise<void>;
+    stopServer(id: string): Promise<void>;
+    softRebootServer(id: string): Promise<void>;
+    hardRebootServer(id: string): Promise<void>;
+    pauseServer(id: string): Promise<void>;
+    unpauseServer(id: string): Promise<void>;
+    suspendServer(id: string): Promise<void>;
+    resumeServer(id: string): Promise<void>;
+    lockServer(id: string): Promise<void>;
+    unlockServer(id: string): Promise<void>;
+
+    // --- 规格相关 ---
+    createFlavor(
+        name: string,
+        vcpus: number,
+        ram: number,
+        disk: number,
+        id?: string,
+        description?: string,
+    ): Promise<{ flavor: Flavor }>;
+    deleteFlavor(id: string): Promise<void>;
+    getFlavors(params?: any): Promise<{ flavors: Flavor[] }>;
+    getFlavor(id: string): Promise<{ flavor: Flavor }>;
+}
