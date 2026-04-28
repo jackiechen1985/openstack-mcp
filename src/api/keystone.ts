@@ -77,7 +77,8 @@ export class KeystoneApi implements IKeystoneApi {
      * @param regionName 区域名
      * @returns 认证成功的 Session 对象
      */
-    async authV2(authUrl: string, username: string, password: string, projectName: string, regionName: string): Promise<AuthV2Response> {
+    async authV2(authUrl: string, username: string, password: string, projectName: string,
+        regionName: string): Promise<AuthV2Response> {
         const logger = getLogger();
         const requestData: AuthV2Request = {
             auth: {

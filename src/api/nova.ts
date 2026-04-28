@@ -9,7 +9,13 @@ import type { Server, Flavor, INovaApi } from './novatypes.js'
 export class NovaApi implements INovaApi {
 
     // --- 虚拟机相关 API ---
-    async createServer(name: string, flavorId: string, imageId: string, availabilityZone: string, networks: string[]) {
+    async createServer(
+        name: string,
+        flavorId: string,
+        imageId: string,
+        availabilityZone: string,
+        networks: string[],
+    ): Promise<{ server: Server }> {
         const session = getCurrentSession();
         return makeApiCall<{ server: Server }>({
             method: 'POST',
@@ -27,7 +33,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async deleteServer(id: string) {
+    async deleteServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -38,7 +44,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async getServers(params?: any) {
+    async getServers(params?: any): Promise<{ servers: Server[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ servers: Server[] }>({
             method: 'GET',
@@ -47,7 +53,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async getServer(id: string) {
+    async getServer(id: string): Promise<{ server: Server }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -58,7 +64,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async updateServer(id: string, name?: string, description?: string) {
+    async updateServer(id: string, name?: string, description?: string): Promise<{ server: Server }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -77,7 +83,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async startServer(id: string) {
+    async startServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -90,7 +96,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async stopServer(id: string) {
+    async stopServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -103,7 +109,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async softRebootServer(id: string) {
+    async softRebootServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -116,7 +122,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async hardRebootServer(id: string) {
+    async hardRebootServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -129,7 +135,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async pauseServer(id: string) {
+    async pauseServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -142,7 +148,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async unpauseServer(id: string) {
+    async unpauseServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -155,7 +161,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async suspendServer(id: string) {
+    async suspendServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -168,7 +174,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async resumeServer(id: string) {
+    async resumeServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -181,7 +187,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async lockServer(id: string) {
+    async lockServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -194,7 +200,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async unlockServer(id: string) {
+    async unlockServer(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -208,7 +214,14 @@ export class NovaApi implements INovaApi {
     }
 
     // --- 虚拟机规格相关 API ---
-    async createFlavor(name: string, vcpus: number, ram: number, disk: number, id?: string, description?: string) {
+    async createFlavor(
+        name: string,
+        vcpus: number,
+        ram: number,
+        disk: number,
+        id?: string,
+        description?: string,
+    ): Promise<{ flavor: Flavor }> {
         const session = getCurrentSession();
         const flavorData: any = {
             flavor: {
@@ -229,7 +242,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async deleteFlavor(id: string) {
+    async deleteFlavor(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -240,7 +253,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async getFlavors(params?: any) {
+    async getFlavors(params?: any): Promise<{ flavors: Flavor[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ flavors: Flavor[] }>({
             method: 'GET',
@@ -249,7 +262,7 @@ export class NovaApi implements INovaApi {
         });
     }
 
-    async getFlavor(id: string) {
+    async getFlavor(id: string): Promise<{ flavor: Flavor }> {
         const session = getCurrentSession();
         return makeApiCall<{ flavor: Flavor }>({
             method: 'GET',

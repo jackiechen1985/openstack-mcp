@@ -9,7 +9,7 @@ import type { Image, IGlanceApi } from './glancetypes.js'
 // --- 镜像相关 API ---
 export class GlanceApi implements IGlanceApi {
 
-    async getImages(params?: any) {
+    async getImages(params?: any): Promise<{ images: Image[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ images: Image[] }>({
             method: 'GET',
@@ -18,7 +18,7 @@ export class GlanceApi implements IGlanceApi {
         });
     }
 
-    async getImage(id: string) {
+    async getImage(id: string): Promise<{ image: Image }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }

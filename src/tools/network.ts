@@ -662,9 +662,9 @@ export function registerNetworkTools(server: McpServer) {
             subnetId
         }) => {
             try {
-                const interfaceInfo = await neutronApi.addRouterInterface(routerId, subnetId);
+                const routerInterface = await neutronApi.addRouterInterface(routerId, subnetId);
                 return {
-                    content: [{ type: 'text', text: `绑定子网到路由器成功，返回绑定的接口信息：${JSON.stringify(interfaceInfo)}` }]
+                    content: [{ type: 'text', text: `绑定子网到路由器成功，返回绑定的接口信息：${JSON.stringify(routerInterface)}` }]
                 }
             } catch (error) {
                 return {
@@ -698,9 +698,9 @@ export function registerNetworkTools(server: McpServer) {
             subnetId
         }) => {
             try {
-                const interfaceInfo = await neutronApi.removeRouterInterface(routerId, subnetId);
+                const routerInterface = await neutronApi.removeRouterInterface(routerId, subnetId);
                 return {
-                    content: [{ type: 'text', text: `路由器上解绑子网成功，返回解绑的接口信息：${JSON.stringify(interfaceInfo)}` }]
+                    content: [{ type: 'text', text: `路由器上解绑子网成功，返回解绑的接口信息：${JSON.stringify(routerInterface)}` }]
                 }
             } catch (error) {
                 return {

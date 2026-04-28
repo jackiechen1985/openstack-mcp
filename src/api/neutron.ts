@@ -13,6 +13,7 @@ import type {
     FixedIps,
     Port,
     Router,
+    RouterInterface,
     SecurityGroup,
     SecurityGroupRule,
     QoSPolicy,
@@ -26,7 +27,7 @@ import type {
 export class NeutronApi implements INeutronApi {
 
     // --- 网络相关 API ---
-    async createNetwork(name: string, availabilityZone: string) {
+    async createNetwork(name: string, availabilityZone: string): Promise<{ network: Network }> {
         const session = getCurrentSession();
         return makeApiCall<{ network: Network }>({
             method: 'POST',
@@ -36,7 +37,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteNetwork(id: string) {
+    async deleteNetwork(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -47,7 +48,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getNetworks(params?: any) {
+    async getNetworks(params?: any): Promise<{ networks: Network[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ networks: Network[] }>({
             method: 'GET',
@@ -56,7 +57,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getNetwork(id: string) {
+    async getNetwork(id: string): Promise<{ network: Network }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -68,8 +69,16 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- 子网相关 API ---
-    async createSubnet(name: string, networkId: string, cidr: string, ipVersion: number, gatewayIp?: string,
-        enableDhcp?: boolean, dnsNameservers?: string[], hostRoutes?: string[]) {
+    async createSubnet(
+        name: string,
+        networkId: string,
+        cidr: string,
+        ipVersion: number,
+        gatewayIp?: string,
+        enableDhcp?: boolean,
+        dnsNameservers?: string[],
+        hostRoutes?: string[],
+    ): Promise<{ subnet: Subnet }> {
         if (ipVersion !== 4 && ipVersion !== 6) {
             throw new Error(`非法的ipVersion: ${ipVersion}，必须为数字4或者6`);
         }
@@ -96,7 +105,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteSubnet(id: string) {
+    async deleteSubnet(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -107,7 +116,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSubnets(params?: any) {
+    async getSubnets(params?: any): Promise<{ subnets: Subnet[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ subnets: Subnet[] }>({
             method: 'GET',
@@ -116,7 +125,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSubnet(id: string) {
+    async getSubnet(id: string): Promise<{ subnet: Subnet }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -128,10 +137,17 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- 端口相关 API ---
-    async createPort(name: string, networkId: string, adminStateUp?: boolean,
-        allowedAddressPairs?: AllowedAddressPair[], fixedIps?: FixedIps[],
-        macAddress?: string, portSecurityEnabled?: boolean, securityGroups?: string[],
-        qosPolicyId?: string) {
+    async createPort(
+        name: string,
+        networkId: string,
+        adminStateUp?: boolean,
+        allowedAddressPairs?: AllowedAddressPair[],
+        fixedIps?: FixedIps[],
+        macAddress?: string,
+        portSecurityEnabled?: boolean,
+        securityGroups?: string[],
+        qosPolicyId?: string,
+    ): Promise<{ port: Port }> {
         if (macAddress !== undefined && !isStrictValidMacAddress(macAddress)) {
             throw new Error(`非法的MAC地址: ${macAddress}`);
         }
@@ -159,7 +175,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deletePort(id: string) {
+    async deletePort(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -170,7 +186,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getPorts(params?: any) {
+    async getPorts(params?: any): Promise<{ ports: Port[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ ports: Port[] }>({
             method: 'GET',
@@ -179,7 +195,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getPort(id: string) {
+    async getPort(id: string): Promise<{ port: Port }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -191,7 +207,7 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- 路由器相关 API ---
-    async createRouter(name: string) {
+    async createRouter(name: string): Promise<{ router: Router }> {
         const session = getCurrentSession();
         return makeApiCall<{ router: Router }>({
             method: 'POST',
@@ -201,7 +217,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteRouter(id: string) {
+    async deleteRouter(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -212,7 +228,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getRouters(params?: any) {
+    async getRouters(params?: any): Promise<{ routers: Router[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ routers: Router[] }>({
             method: 'GET',
@@ -221,7 +237,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getRouter(id: string) {
+    async getRouter(id: string): Promise<{ router: Router }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -232,7 +248,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async addRouterInterface(routerId: string, subnetId: string) {
+    async addRouterInterface(routerId: string, subnetId: string): Promise<RouterInterface> {
         const session = getCurrentSession();
         return makeApiCall({
             method: 'PUT',
@@ -242,7 +258,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async removeRouterInterface(routerId: string, subnetId: string) {
+    async removeRouterInterface(routerId: string, subnetId: string): Promise<RouterInterface> {
         const session = getCurrentSession();
         return makeApiCall({
             method: 'PUT',
@@ -253,7 +269,7 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- 安全组相关 API ---
-    async createSecurityGroup(name: string, stateful?: boolean) {
+    async createSecurityGroup(name: string, stateful?: boolean): Promise<{ security_group: SecurityGroup }> {
         const session = getCurrentSession();
         const sgData: any = { security_group: { name: name } };
         if (stateful !== undefined) sgData.security_group.stateful = stateful;
@@ -266,7 +282,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteSecurityGroup(id: string) {
+    async deleteSecurityGroup(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -277,7 +293,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSecurityGroups(params?: any) {
+    async getSecurityGroups(params?: any): Promise<{ security_groups: SecurityGroup[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ security_groups: SecurityGroup[] }>({
             method: 'GET',
@@ -286,7 +302,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSecurityGroup(id: string) {
+    async getSecurityGroup(id: string): Promise<{ security_group: SecurityGroup }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -297,8 +313,16 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async createSecurityGroupRule(securityGroupId: string, direction: string, ethertype?: string, protocol?: string,
-        remoteIpPrefix?: string, remoteGroupId?: string, portRangeMin?: number, portRangeMax?: number) {
+    async createSecurityGroupRule(
+        securityGroupId: string,
+        direction: string,
+        ethertype?: string,
+        protocol?: string,
+        remoteIpPrefix?: string,
+        remoteGroupId?: string,
+        portRangeMin?: number,
+        portRangeMax?: number,
+    ): Promise<{ security_group_rule: SecurityGroupRule }> {
         if (!isValidUUIDv4(securityGroupId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${securityGroupId}`);
         }
@@ -331,7 +355,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteSecurityGroupRule(id: string) {
+    async deleteSecurityGroupRule(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -342,7 +366,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSecurityGroupRules(params?: any) {
+    async getSecurityGroupRules(params?: any): Promise<{ security_group_rules: SecurityGroupRule[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ security_group_rules: SecurityGroupRule[] }>({
             method: 'GET',
@@ -351,7 +375,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getSecurityGroupRule(id: string) {
+    async getSecurityGroupRule(id: string): Promise<{ security_group_rule: SecurityGroupRule }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -363,7 +387,12 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- QoS Policy 相关 API ---
-    async createQoSPolicy(name: string, description?: string, shared?: boolean, isDefault?: boolean) {
+    async  createQoSPolicy(
+        name: string,
+        description?: string,
+        shared?: boolean,
+        isDefault?: boolean,
+    ): Promise<{ policy: QoSPolicy }> {
         const session = getCurrentSession();
         const policyData: any = { policy: { name: name } };
         if (description !== undefined) policyData.policy.description = description;
@@ -378,7 +407,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteQoSPolicy(id: string) {
+    async deleteQoSPolicy(id: string): Promise<void> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -389,7 +418,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSPolicies(params?: any) {
+    async getQoSPolicies(params?: any): Promise<{ policies: QoSPolicy[] }> {
         const session = getCurrentSession();
         return makeApiCall<{ policies: QoSPolicy[] }>({
             method: 'GET',
@@ -398,7 +427,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSPolicy(id: string) {
+    async getQoSPolicy(id: string): Promise<{ policy: QoSPolicy }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -409,7 +438,13 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async updateQoSPolicy(id: string, name?: string, description?: string, shared?: boolean, isDefault?: boolean) {
+    async updateQoSPolicy(
+        id: string,
+        name?: string,
+        description?: string,
+        shared?: boolean,
+        isDefault?: boolean,
+    ): Promise<{ policy: QoSPolicy }> {
         if (!isValidUUIDv4(id)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${id}`);
         }
@@ -431,7 +466,12 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- QoS Bandwidth Limit Rule 相关 API ---
-    async createQoSBandwidthLimitRule(policyId: string, maxKbps?: number, maxBurstKbps?: number, direction?: string) {
+    async createQoSBandwidthLimitRule(
+        policyId: string,
+        maxKbps?: number,
+        maxBurstKbps?: number,
+        direction?: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -450,7 +490,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteQoSBandwidthLimitRule(policyId: string, ruleId: string) {
+    async deleteQoSBandwidthLimitRule(policyId: string, ruleId: string): Promise<void> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -464,7 +504,10 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSBandwidthLimitRules(policyId: string, params?: any) {
+    async getQoSBandwidthLimitRules(
+        policyId: string,
+        params?: any,
+    ): Promise<{ bandwidth_limit_rules: QoSBandwidthLimitRule[] }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -476,7 +519,10 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSBandwidthLimitRule(policyId: string, ruleId: string) {
+    async getQoSBandwidthLimitRule(
+        policyId: string,
+        ruleId: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -490,7 +536,13 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async updateQoSBandwidthLimitRule(policyId: string, ruleId: string, maxKbps?: number, maxBurstKbps?: number, direction?: string) {
+    async updateQoSBandwidthLimitRule(
+        policyId: string,
+        ruleId: string,
+        maxKbps?: number,
+        maxBurstKbps?: number,
+        direction?: string,
+    ): Promise<{ bandwidth_limit_rule: QoSBandwidthLimitRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -513,7 +565,7 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- DSCP Marking Rule API 相关 API ---
-    async createQoSDscpMarkingRule(policyId: string, dscpMark: number) {
+    async createQoSDscpMarkingRule(policyId: string, dscpMark: number): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -530,7 +582,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteQoSDscpMarkingRule(policyId: string, ruleId: string) {
+    async deleteQoSDscpMarkingRule(policyId: string, ruleId: string): Promise<void> {
         if (!isValidUUIDv4(policyId) || !isValidUUIDv4(ruleId)) {
             throw new Error(`非法的 OpenStack UUID 格式`);
         }
@@ -541,7 +593,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSDscpMarkingRules(policyId: string, params?: any) {
+    async getQoSDscpMarkingRules(policyId: string, params?: any): Promise<{ dscp_marking_rules: QoSDscpMarkingRule[] }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -553,7 +605,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSDscpMarkingRule(policyId: string, ruleId: string) {
+    async getQoSDscpMarkingRule(policyId: string, ruleId: string): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -567,7 +619,11 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async updateQoSDscpMarkingRule(policyId: string, ruleId: string, dscpMark?: number) {
+    async updateQoSDscpMarkingRule(
+        policyId: string,
+        ruleId: string,
+        dscpMark?: number,
+    ): Promise<{ dscp_marking_rule: QoSDscpMarkingRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -588,7 +644,11 @@ export class NeutronApi implements INeutronApi {
     }
 
     // --- Minimum Bandwidth Rule API 相关 API ---
-    async createQoSMinimumBandwidthRule(policyId: string, minKbps: number, direction?: string) {
+    async createQoSMinimumBandwidthRule(
+        policyId: string,
+        minKbps: number,
+        direction?: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -608,7 +668,7 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async deleteQoSMinimumBandwidthRule(policyId: string, ruleId: string) {
+    async deleteQoSMinimumBandwidthRule(policyId: string, ruleId: string): Promise<void> {
         if (!isValidUUIDv4(policyId) || !isValidUUIDv4(ruleId)) {
             throw new Error(`非法的 OpenStack UUID 格式`);
         }
@@ -619,7 +679,10 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSMinimumBandwidthRules(policyId: string, params?: any) {
+    async getQoSMinimumBandwidthRules(
+        policyId: string,
+        params?: any,
+    ): Promise<{ minimum_bandwidth_rules: QoSMinimumBandwidthRule[] }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -631,7 +694,10 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async getQoSMinimumBandwidthRule(policyId: string, ruleId: string) {
+    async getQoSMinimumBandwidthRule(
+        policyId: string,
+        ruleId: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }
@@ -645,7 +711,12 @@ export class NeutronApi implements INeutronApi {
         });
     }
 
-    async updateQoSMinimumBandwidthRule(policyId: string, ruleId: string, minKbps: number, direction?: string) {
+    async updateQoSMinimumBandwidthRule(
+        policyId: string,
+        ruleId: string,
+        minKbps: number,
+        direction?: string,
+    ): Promise<{ minimum_bandwidth_rule: QoSMinimumBandwidthRule }> {
         if (!isValidUUIDv4(policyId)) {
             throw new Error(`非法的 OpenStack UUID 格式: ${policyId}`);
         }

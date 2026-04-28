@@ -344,6 +344,17 @@ export interface Router {
     project_id: string;
 }
 
+export interface RouterInterface {
+  id: string;
+  network_id: string;
+  port_id: string;
+  subnet_id: string;
+  subnet_ids: string[];
+  project_id: string;
+  tenant_id: string;
+  tags: string[];
+}
+
 export interface SecurityGroup {
     /** 创建时间 (ISO 8601 格式) */
     created_at: string;
@@ -535,8 +546,8 @@ export interface INeutronApi {
     deleteRouter(id: string): Promise<void>;
     getRouters(params?: any): Promise<{ routers: Router[] }>;
     getRouter(id: string): Promise<{ router: Router }>;
-    addRouterInterface(routerId: string, subnetId: string): Promise<any>;
-    removeRouterInterface(routerId: string, subnetId: string): Promise<any>;
+    addRouterInterface(routerId: string, subnetId: string): Promise<RouterInterface>;
+    removeRouterInterface(routerId: string, subnetId: string): Promise<RouterInterface>;
 
     createSecurityGroup(name: string, stateful?: boolean): Promise<{ security_group: SecurityGroup }>;
     deleteSecurityGroup(id: string): Promise<void>;
